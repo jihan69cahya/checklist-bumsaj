@@ -15,4 +15,9 @@ class ChecklistItem extends Model
     {
         return $this->belongsTo(ChecklistCategory::class);
     }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(ChecklistSubcategory::class);
+    }
 }

@@ -14,9 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            PeriodSeeder::class,
-            ChecklistCategorySeeder::class,
-            EntryValuesSeeder::class
+            // PeriodSeeder::class,
+            // ChecklistCategorySeeder::class,
+            // EntryValuesSeeder::class
+            // ChecklistSubcategorySeeder::class,
+            ChecklistItemSeeder::class
         ]);
     }
 }
