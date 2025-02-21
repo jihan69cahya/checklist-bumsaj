@@ -29,7 +29,7 @@ class ChecklistEntry extends Model
         return $this->belongsTo(ChecklistCategory::class);
     }
 
-    public function item()
+    public function checklist_item()
     {
         return $this->belongsTo(ChecklistItem::class);
     }
