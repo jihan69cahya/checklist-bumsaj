@@ -10,15 +10,16 @@
 
     <body class="bg-gray-100">
         <div class="flex min-h-screen">
-            <!-- Sidebar -->
             <div class="fixed top-0 left-0 h-full">
-                <!-- Sidebar component -->
                 <x-sidebar />
             </div>
 
-            <!-- Main content area -->
-            <div class="w-full p-8 ml-64 content">
-                @yield('content')
+            <div class="w-full ml-64">
+                @include('components.topbar')
+
+                <div class="p-8">
+                    @yield('content')
+                </div>
             </div>
         </div>
     </body>
