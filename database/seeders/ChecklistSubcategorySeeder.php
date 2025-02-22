@@ -45,8 +45,8 @@ class ChecklistSubcategorySeeder extends Seeder
             foreach ($subcategories_list as $subcategory_name)
             {
                 ChecklistSubcategory::create([
-                    'category_id' => $category_id,
-                    'subcategory_name' => $subcategory_name,
+                    'checklist_category_id' => $category_id,
+                    'name' => $subcategory_name,
                 ]);
             }
         }

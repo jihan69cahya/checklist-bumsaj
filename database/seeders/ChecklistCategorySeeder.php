@@ -14,17 +14,17 @@ class ChecklistCategorySeeder extends Seeder
     public function run(): void
     {
         ChecklistCategory::create([
-            'category_name' => 'Fasilitas Gedung Terminal',
+            'name' => 'Fasilitas Gedung Terminal',
             'description' => 'Kategori untuk mengecek fasilitas yang ada di gedung terminal'
         ]);
 
         ChecklistCategory::create([
-            'category_name' => 'Kebersihan Gedung Terminal',
+            'name' => 'Kebersihan Gedung Terminal',
             'description' => 'Kategori untuk mengecek kebersihan gedung terminal'
         ]);
 
         ChecklistCategory::create([
-            'category_name' => 'Kondisi Area Curbside',
+            'name' => 'Kondisi Area Curbside',
             'description' => 'Kategori untuk mengecek kondisi area curbside di sekitar terminal'
         ]);
     }

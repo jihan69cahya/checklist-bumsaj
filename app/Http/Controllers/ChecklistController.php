@@ -25,22 +25,23 @@ class ChecklistController extends Controller
         $category_id = $categoryMap[$category_identifier]['category_id'];
         $view = $categoryMap[$category_identifier]['view'];
 
-        $checklist_items = ChecklistItem::where('category_id', $category_id)
-            ->with('subcategory')
+        $checklist_items = ChecklistItem::where('checklist_category_id', $category_id)
+            ->with('checklist_subcategory')
             ->get()
-            ->groupBy('subcategory_id');
+            ->groupBy('checklist_subcategory_id');
+
 
         $periods = Period::all();
         $periods = $periods->map(function ($period)
         {
-            $period->period_start_time = substr($period->period_start_time, 0, 5); // Remove seconds
-            $period->period_end_time = substr($period->period_end_time, 0, 5); // Remove seconds
+            $period->start_time = substr($period->start_time, 0, 5);
+            $period->end_time = substr($period->end_time, 0, 5);
             return $period;
         });
 
-        $entry_values = EntryValue::where('category_id', $category_id)->get();
+        $entry_values = EntryValue::where('checklist_category_id', $category_id)->get();
 
-
+        // Pass data to the view
         return view($view, compact('checklist_items', 'category_identifier', 'periods', 'entry_values'));
     }
 }

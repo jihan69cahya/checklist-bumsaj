@@ -24,7 +24,7 @@ class ChecklistEntry extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function category()
+    public function checklist_category()
     {
         return $this->belongsTo(ChecklistCategory::class);
     }

@@ -8,14 +8,14 @@
 
     <div class="relative mt-4">
         <button class="flex items-center px-4 py-2 text-black bg-gray-300 rounded" id="period-dropdown-button">
-            Pilih Periode <!-- Default placeholder -->
+            Pilih Periode
             <span class="ml-2">▼</span>
         </button>
         <div class="absolute hidden mt-2 bg-white border border-gray-300 rounded shadow-lg" id="period-dropdown-menu">
             @foreach ($periods as $period)
                 <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" data-period-id="{{ $period->id }}"
                     href="#">
-                    {{ $period->period_label }}: {{ $period->period_start_time }} - {{ $period->period_end_time }}
+                    {{ $period->label }}: {{ $period->start_time }} - {{ $period->end_time }}
                 </a>
             @endforeach
         </div>
@@ -35,9 +35,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($checklist_items as $subcategory_id => $subcategory_items)
+            @foreach ($checklist_items as $checklist_subcategory_id => $checklist_subcategory_items)
                 @php
-                    $subcategory_name = $subcategory_items->first()->subcategory->subcategory_name;
+                    $subcategory_name = $checklist_subcategory_items->first()->checklist_subcategory->name;
                 @endphp
 
                 <tr>
@@ -46,9 +46,9 @@
                     </td>
                 </tr>
 
-                @foreach ($subcategory_items as $item)
+                @foreach ($checklist_subcategory_items as $item)
                     <tr>
-                        <td class="px-4 py-2 border border-gray-300">{{ $item->item_name }}</td>
+                        <td class="px-4 py-2 border border-gray-300">{{ $item->name }}</td>
                         @foreach ($entry_values as $entry_value)
                             <td class="border border-gray-300"></td>
                         @endforeach
@@ -58,52 +58,42 @@
             @endforeach
         </tbody>
     </table>
+
     <script>
-        // Toggle dropdown visibility
         document.getElementById('period-dropdown-button').addEventListener('click', function() {
             const dropdownMenu = document.getElementById('period-dropdown-menu');
             dropdownMenu.classList.toggle('hidden');
         });
 
-        // Handle period selection
         document.querySelectorAll('#period-dropdown-menu a').forEach(function(link) {
             link.addEventListener('click', function(event) {
                 event.preventDefault();
 
-                // Get the selected period ID and text
                 const periodId = this.getAttribute('data-period-id');
                 const periodText = this.textContent;
 
-                // Update the button text
                 document.getElementById('period-dropdown-button').innerHTML = `
                     ${periodText}
                     <span class="ml-2">▼</span>
                 `;
 
-                // Close the dropdown
                 document.getElementById('period-dropdown-menu').classList.add('hidden');
 
-                // Fetch and update table data based on the selected period
                 fetchTableData(periodId);
             });
         });
 
-        // Function to fetch and update table data using Axios
         function fetchTableData(periodId) {
-            // Make an AJAX request to fetch data for the selected period
             axios.get(`/checklist/data?period_id=${periodId}`)
                 .then(response => {
                     const data = response.data;
 
-                    // Clear the existing table rows
                     const tbody = document.querySelector('table tbody');
                     tbody.innerHTML = '';
 
-                    // Loop through the new data and add rows to the table
                     data.checklist_items.forEach((subcategoryItems, subcategoryId) => {
-                        const subcategoryName = subcategoryItems[0].subcategory.subcategory_name;
+                        const subcategoryName = subcategoryItems[0].subcategory.name; // Updated column name
 
-                        // Add subcategory row
                         tbody.innerHTML += `
                             <tr>
                                 <td class="px-4 py-2 font-semibold bg-gray-200" colspan="${2 + data.entry_values.length}">
@@ -112,14 +102,13 @@
                             </tr>
                         `;
 
-                        // Add checklist items
                         subcategoryItems.forEach(item => {
                             tbody.innerHTML += `
                                 <tr>
-                                    <td class="px-4 py-2 border border-gray-300">${item.item_name}</td>
+                                    <td class="px-4 py-2 border border-gray-300">${item.name}</td> <!-- Updated column name -->
                                     ${data.entry_values.map(entryValue => `
-                                                                    <td class="border border-gray-300"></td>
-                                                                `).join('')}
+                                                                                                                                    <td class="border border-gray-300"></td>
+                                                                                                                                `).join('')}
                                     <td class="px-4 py-2 border border-gray-300">${item.keterangan || ''}</td>
                                 </tr>
                             `;

@@ -11,8 +11,8 @@ class EntryValue extends Model
 
     protected $fillable = ['category_id', 'value_code', 'value_description'];
 
-    public function category()
+    public function checklist_category()
     {
-        return $this->belongsTo(ChecklistCategory::class, 'category_id');
+        return $this->belongsTo(ChecklistCategory::class);
     }
 }

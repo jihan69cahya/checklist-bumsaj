@@ -21,8 +21,8 @@ class ChecklistSubcategory extends Model
         return $this->hasMany(EntryValue::class);
     }
 
-    public function category()
+    public function checklist_category()
     {
-        return $this->belongsTo(ChecklistCategory::class, 'category_id');
+        return $this->belongsTo(ChecklistCategory::class);
     }
 }
