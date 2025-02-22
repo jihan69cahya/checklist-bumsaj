@@ -25,6 +25,33 @@
             </div>
         </div>
 
+        <table class="mt-6 w-full border border-collapse">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">Nama Ruangan</th>
+                    <th class="border px-4 py-2">B</th>
+                    <th class="border px-4 py-2">RK</th>
+                    <th class="border px-4 py-2">KB</th>
+                    <th class="border px-4 py-2">K</th>
+                    <th class="border px-4 py-2">P</th>
+                    <th class="border px-4 py-2">L</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($subcategories as $subcategory)
+                    <tr>
+                        <td class="border px-4 py-2">{{ $subcategory->subcategory_name }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][1] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][2] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][4] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][5] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][6] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][7] ?? 0 }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
         <button class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
             <span class="fa-solid fa-download"></span>
             Download Rekapitulasi
