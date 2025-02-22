@@ -50,9 +50,17 @@
                     <tr>
                         <td class="px-4 py-2 border border-gray-300">{{ $item->name }}</td>
                         @foreach ($entry_values as $entry_value)
-                            <td class="border border-gray-300"></td>
+                            <td class="border border-gray-300">
+                                <!-- Add a radio button for each entry value -->
+                                <input class="flex justify-center w-full entry-value-radio"
+                                    name="entry_value_{{ $item->id }}" data-item-id="{{ $item->id }}"
+                                    data-entry-value-id="{{ $entry_value->id }}" type="radio"
+                                    value="{{ $entry_value->id }}">
+                            </td>
                         @endforeach
-                        <td class="px-4 py-2 border border-gray-300">{{ $item->keterangan ?? '' }}</td>
+                        <td class="px-4 py-2 border border-gray-300">
+                            {{ $item->keterangan }}
+                        </td>
                     </tr>
                 @endforeach
             @endforeach
@@ -83,6 +91,29 @@
             });
         });
 
+        document.querySelectorAll('.entry-value-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const entryValueId = this.getAttribute('data-entry-value-id');
+
+                saveEntryValue(itemId, entryValueId);
+            });
+        });
+
+        function saveEntryValue(itemId, entryValueId) {
+            console.log(itemId, entryValueId);
+            // axios.post('/checklist/save-entry-value', {
+            //     item_id: itemId,
+            //     entry_value_id: entryValueId
+            // })
+            // .then(response => {
+            //     console.log('Entry value saved:', response.data);
+            // })
+            // .catch(error => {
+            //     console.error('Error saving entry value:', error);
+            // });
+        }
+
         function fetchTableData(periodId) {
             axios.get(`/checklist/data?period_id=${periodId}`)
                 .then(response => {
@@ -107,8 +138,8 @@
                                 <tr>
                                     <td class="px-4 py-2 border border-gray-300">${item.name}</td> <!-- Updated column name -->
                                     ${data.entry_values.map(entryValue => `
-                                                                                                                                <td class="border border-gray-300"></td>
-                                                                                                                            `).join('')}
+                                                                                                                                                        <td class="border border-gray-300"></td>
+                                                                                                                                                    `).join('')}
                                     <td class="px-4 py-2 border border-gray-300">${item.keterangan || ''}</td>
                                 </tr>
                             `;
