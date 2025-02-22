@@ -7,7 +7,9 @@
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-home"></span>
             </div>
-            <a href="{{ route('beranda') }}">Beranda</a>
+            <div class="w-full">
+                <a href="{{ route('beranda') }}">Beranda</a>
+            </div>
         </li>
         <li class="flex flex-col gap-4">
             <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
@@ -38,13 +40,17 @@
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-clipboard"></span>
             </div>
-            <span>Rekapitulasi</span>
+            <div class="w-full">
+                <span>Rekapitulasi</span>
+            </div>
         </li>
         <li class="flex items-center gap-4 mt-auto mb-8">
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-right-from-bracket"></span>
             </div>
-            <span>Keluar</span>
+            <div class="w-full">
+                <span>Keluar</span>
+            </div>
         </li>
     </ul>
 </div>
