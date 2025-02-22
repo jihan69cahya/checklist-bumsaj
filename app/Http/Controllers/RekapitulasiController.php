@@ -56,12 +56,14 @@ class RekapitulasiController extends Controller
             ->groupBy('checklist_item_id')
             ->map(fn($items) => $items->pluck('total', 'entry_value_id')->toArray());
 
-        $response = new StreamedResponse(function () use ($subcategories, $entries, $entry_values) {
+        $response = new StreamedResponse(function () use ($subcategories, $entries, $entry_values)
+        {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, ['Nama Ruangan', ...$entry_values->pluck('value_code')->toArray()]);
 
-            foreach ($subcategories as $subcategory) {
+            foreach ($subcategories as $subcategory)
+            {
                 fputcsv($handle, [
                     $subcategory->subcategory_name,
                     ...array_map(fn($entry_value) => $entries[$subcategory->id][$entry_value->id] ?? 0, $entry_values)
@@ -95,44 +97,46 @@ class RekapitulasiController extends Controller
             ->groupBy('checklist_item_id')
             ->map(fn($items) => $items->pluck('total', 'entry_value_id')->toArray());
 
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            
-            // Header
-            $header = ['Nama Ruangan', ...$entry_values->pluck('value_code')->toArray()];
-            $sheet->fromArray([$header], null, 'A1');
-            
-            $row = 2;
-            foreach ($subcategories as $subcategory) {
-                $sheet->fromArray(
-                    [
-                        $subcategory->name, // Gantilah $subcategory->name jika field benar adalah subcategory_name
-                        ...$entry_values->map(fn($entry_value) => $entries[$subcategory->id][$entry_value->id] ?? 0)->toArray(),
-                    ],
-                    null,
-                    "A$row"
-                );
-                $row++;
-            }
-            
-            // Formatting
-            $sheet->getStyle("A1:Z1")->getFont()->setBold(true);
-            foreach (range('A', 'Z') as $col) {
-                $sheet->getColumnDimension($col)->setAutoSize(true);
-            }
-            
-            // File
-            $filename = "rekapitulasi_" . str_replace(' ', '_', $category->name) . "_{$startDate}_{$endDate}.xls";
-            $writer = new Xls($spreadsheet);
-            
-            $response = new StreamedResponse(function () use ($writer) {
-                $writer->save('php://output');
-            });
-            
-            $response->headers->set('Content-Type', 'application/vnd.ms-excel');
-            $response->headers->set('Content-Disposition', "attachment; filename=\"$filename\"");
-            
-            return $response;
-            
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header
+        $header = ['Nama Ruangan', ...$entry_values->pluck('value_code')->toArray()];
+        $sheet->fromArray([$header], null, 'A1');
+
+        $row = 2;
+        foreach ($subcategories as $subcategory)
+        {
+            $sheet->fromArray(
+                [
+                    $subcategory->name,
+                    ...$entry_values->map(fn($entry_value) => $entries[$subcategory->id][$entry_value->id] ?? '0')->toArray(),
+                ],
+                null,
+                "A$row"
+            );
+            $row++;
+        }
+
+        // Formatting
+        $sheet->getStyle("A1:Z1")->getFont()->setBold(true);
+        foreach (range('A', 'Z') as $col)
+        {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // File
+        $filename = "rekapitulasi_" . str_replace(' ', '_', $category->name) . "_{$startDate}_{$endDate}.xls";
+        $writer = new Xls($spreadsheet);
+
+        $response = new StreamedResponse(function () use ($writer)
+        {
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.ms-excel');
+        $response->headers->set('Content-Disposition', "attachment; filename=\"$filename\"");
+
+        return $response;
     }
 }
