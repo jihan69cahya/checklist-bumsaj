@@ -16,6 +16,7 @@ class RekapitulasiController extends Controller
 {
     public function showRekapitulasi(Request $request)
     {
+        // Get the category ID from the request, default to 1 if not provided
         $categoryId = $request->get('category_id', 1);
         $startDate = $request->get('start_date', today()->format('Y-m-d'));
         $endDate = $request->get('end_date', today()->format('Y-m-d'));
@@ -38,46 +39,7 @@ class RekapitulasiController extends Controller
         return view('rekapitulasi', compact('subcategories', 'entries', 'categoryId', 'entry_values'));
     }
 
-    public function downloadCSV(Request $request)
-    {
-        $categoryId = $request->get('category_id', 1);
-        $category = ChecklistCategory::findOrFail($categoryId);
-        $startDate = $request->get('start_date', today()->format('Y-m-d'));
-        $endDate = $request->get('end_date', today()->format('Y-m-d'));
-
-        $subcategories = $category->subcategories;
-        $entry_values = $category->entry_values;
-
-        $entries = ChecklistEntry::whereIn('checklist_item_id', $subcategories->pluck('id'))
-            ->whereBetween('entry_date', [$startDate, $endDate])
-            ->select('checklist_item_id', 'entry_value_id', DB::raw('count(*) as total'))
-            ->groupBy('checklist_item_id', 'entry_value_id')
-            ->get()
-            ->groupBy('checklist_item_id')
-            ->map(fn($items) => $items->pluck('total', 'entry_value_id')->toArray());
-
-        $response = new StreamedResponse(function () use ($subcategories, $entries, $entry_values)
-        {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, ['Nama Ruangan', ...$entry_values->pluck('value_code')->toArray()]);
-
-            foreach ($subcategories as $subcategory)
-            {
-                fputcsv($handle, [
-                    $subcategory->subcategory_name,
-                    ...array_map(fn($entry_value) => $entries[$subcategory->id][$entry_value->id] ?? 0, $entry_values)
-                ]);
-            }
-
-            fclose($handle);
-        });
-
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="rekapitulasi.csv"');
-
-        return $response;
-    }
+    
 
     public function downloadXls(Request $request)
     {
@@ -138,5 +100,7 @@ class RekapitulasiController extends Controller
         $response->headers->set('Content-Disposition', "attachment; filename=\"$filename\"");
 
         return $response;
+        // Pass data to the view
+        return view('rekapitulasi', compact('subcategories', 'entries', 'categoryId', 'entry_values'));
     }
 }

@@ -3,11 +3,13 @@
         <img class="w-16 h-auto" src="{{ asset('images/logo_kementrian.png') }}" alt="Kementrian Logo">
     </div>
     <ul class="flex flex-col h-full gap-6 p-8 font-medium select-none pe-0 text-md">
-        <a href="{{ route('beranda') }}" class="flex items-center gap-4 w-full">
+        <a class="flex items-center w-full gap-4" href="{{ route('beranda') }}">
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-home"></span>
             </div>
-            <span>Beranda</span>
+            <div class="w-full">
+                <span>Beranda</span>
+            </div>
         </a>
         <li class="flex flex-col gap-4">
             <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
@@ -38,29 +40,34 @@
                         Kondisi Area Curbside
                     </a>
                 </li>
-
             </ul>
         </li>
         <li class="flex items-center gap-4 cursor-pointer">
-            <a href="{{ route('rekapitulasi') }}" class="flex items-center gap-4 w-full">
+            <a class="flex items-center w-full gap-4" href="{{ route('rekapitulasi') }}">
                 <div class="flex items-center justify-center w-6 h-6">
                     <span class="fa-solid fa-clipboard"></span>
                 </div>
-                <span>Rekapitulasi</span>
+                <div class="w-full">
+                    <span>Rekapitulasi</span>
+                </div>
             </a>
-
         </li>
 
+        <!-- Logout Form -->
         <li class="flex items-center gap-4 mt-auto mb-8">
-            <div class="flex items-center justify-center w-6 h-6">
-                <span class="fa-solid fa-right-from-bracket"></span>
-            </div>
-            <div class="w-full">
-                <span>Keluar</span>
-            </div>
+            <form class="flex items-center w-full gap-4" action="{{ route('logout') }}" method="POST">
+                @csrf <!-- CSRF Protection -->
+                <div class="flex items-center justify-center w-6 h-6">
+                    <span class="fa-solid fa-right-from-bracket"></span>
+                </div>
+                <button class="w-full text-left" type="submit">
+                    <span>Keluar</span>
+                </button>
+            </form>
         </li>
     </ul>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const checklistDiv = document.getElementById('checklist-label');

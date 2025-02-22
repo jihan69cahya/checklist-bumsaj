@@ -7,16 +7,16 @@
         
         <div class="grid grid-cols-3 gap-4 mb-6">
             <div class="bg-yellow-500 text-white p-4 rounded-lg flex flex-col items-center">
-                <span class="text-2xl font-bold">✅ 1</span>
-                <p class="text-sm">Checklist sudah diisi</p>
+                <i class="fa-regular fa-circle-check text-4xl m-1"></i>
+                <p class="text-lg m-2">Checklist sudah diisi</p>
             </div>
             <div class="bg-yellow-500 text-white p-4 rounded-lg flex flex-col items-center">
-                <span class="text-2xl font-bold">⭕ 2</span>
-                <p class="text-sm">Checklist belum diisi</p>
+                <i class="fa-regular fa-circle text-4xl m-1"></i>
+                <p class="text-lg m-2">Checklist belum diisi</p>
             </div>
             <div class="bg-yellow-500 text-white p-4 rounded-lg flex flex-col items-center">
-                <span class="text-2xl font-bold">⏳ 17 <span class="text-sm">menit</span></span>
-                <p class="text-sm">Menuju periode berikutnya</p>
+                <i class="fa-regular fa-hourglass text-4xl m-1"></i>
+                <p class="text-lg m-2">Menuju periode berikutnya</p>
             </div>
         </div>
         
