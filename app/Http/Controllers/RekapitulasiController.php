@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChecklistEntry;
+use App\Models\ChecklistSubcategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RekapitulasiController extends Controller
 {
@@ -17,11 +20,11 @@ class RekapitulasiController extends Controller
             ->groupBy('subcategory_id', 'entry_value_id')
             ->get()
             ->groupBy('subcategory_id')
-            ->map(function ($items) {
+            ->map(function ($items)
+            {
                 return $items->pluck('total', 'entry_value_id')->toArray();
             });
 
         return view('rekapitulasi', compact('subcategories', 'entries'));
     }
-
 }
