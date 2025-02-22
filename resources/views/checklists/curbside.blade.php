@@ -12,7 +12,7 @@
             <span class="ml-2">▼</span>
         </button>
     </div>
-    <table class="w-full border border-collapse border-gray-300 table-auto">
+    <table class="w-full border border-collapse border-gray-300 table-auto mt-4">
         <thead>
             <tr>
                 <th class="px-4 py-2 border border-gray-300">Ruangan</th>
