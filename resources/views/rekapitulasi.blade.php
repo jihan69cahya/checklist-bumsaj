@@ -57,10 +57,13 @@
     </table>
 
     <!-- Tombol Download -->
-    <button class="flex items-center gap-2 px-4 py-2 mt-6 text-white bg-blue-600 rounded-md">
+    <a href="{{ route('rekapitulasi.download', ['start_date' => request('start_date', today()->format('Y-m-d')), 'end_date' => request('end_date', today()->format('Y-m-d')), 'category_id' => request('category_id', 1)]) }}" 
+    class="flex items-center gap-2 px-4 py-2 mt-6 text-white bg-blue-600 rounded-md">
         <span class="fa-solid fa-download"></span>
         Download Rekapitulasi
-    </button>
+    </a>
+
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -78,6 +81,19 @@
             }
 
             document.getElementById("filterBtn").addEventListener("click", updateRekapitulasi);
+        });
+
+        document.getElementById("downloadCsvBtn").addEventListener("click", function () {
+            let startDate = document.getElementById("startDate").value;
+            let endDate = document.getElementById("endDate").value;
+            let selectedCategory = document.getElementById("categorySelect").value;
+
+            let url = new URL("{{ route('rekapitulasi.download') }}", window.location.origin);
+            url.searchParams.set("start_date", startDate);
+            url.searchParams.set("end_date", endDate);
+            url.searchParams.set("category_id", selectedCategory);
+
+            window.location.href = url.toString();
         });
     </script>
 @endsection
