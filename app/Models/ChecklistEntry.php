@@ -11,8 +11,8 @@ class ChecklistEntry extends Model
 
     protected $fillable = [
         'user_id',
-        'category_id',
-        'item_id',
+        'checklist_category_id',
+        'checklist_item_id',
         'period_id',
         'entry_value_id',
         'entry_date',

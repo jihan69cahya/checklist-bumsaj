@@ -38,7 +38,7 @@
         <tbody>
             @foreach ($subcategories as $subcategory)
                 <tr>
-                    <td class="px-4 py-2 border">{{ $subcategory->subcategory_name }}</td>
+                    <td class="px-4 py-2 border">{{ $subcategory->name }}</td>
 
                     @if ($categoryId == 1)
                         <td class="px-4 py-2 border">{{ $entries[$subcategory->id][1] ?? 0 }}</td>

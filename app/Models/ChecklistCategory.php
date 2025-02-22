@@ -17,11 +17,11 @@ class ChecklistCategory extends Model
 
     public function subcategories()
     {
-        return $this->hasMany(ChecklistSubcategory::class, 'category_id');
+        return $this->hasMany(ChecklistSubcategory::class, 'checklist_category_id');
     }
 
     public function entry_values()
     {
-        return $this->hasMany(EntryValue::class, 'category_id');
+        return $this->hasMany(EntryValue::class, 'checklist_category_id');
     }
 }
