@@ -3,14 +3,12 @@
         <img class="w-16 h-auto" src="{{ asset('images/logo_kementrian.png') }}" alt="Kementrian Logo">
     </div>
     <ul class="flex flex-col h-full gap-6 p-8 font-medium select-none pe-0 text-md">
-        <li class="flex items-center gap-4 cursor-pointer">
+        <a href="{{ route('beranda') }}" class="flex items-center gap-4 w-full">
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-home"></span>
             </div>
-            <div class="w-full">
-                <a href="{{ route('beranda') }}">Beranda</a>
-            </div>
-        </li>
+            <span>Beranda</span>
+        </a>
         <li class="flex flex-col gap-4">
             <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
                 <div class="flex items-center justify-center w-6 h-6">
@@ -44,13 +42,15 @@
             </ul>
         </li>
         <li class="flex items-center gap-4 cursor-pointer">
-            <div class="flex items-center justify-center w-6 h-6">
-                <span class="fa-solid fa-clipboard"></span>
-            </div>
-            <div class="w-full">
+            <a href="{{ route('rekapitulasi') }}" class="flex items-center gap-4 w-full">
+                <div class="flex items-center justify-center w-6 h-6">
+                    <span class="fa-solid fa-clipboard"></span>
+                </div>
                 <span>Rekapitulasi</span>
-            </div>
+            </a>
+
         </li>
+
         <li class="flex items-center gap-4 mt-auto mb-8">
             <div class="flex items-center justify-center w-6 h-6">
                 <span class="fa-solid fa-right-from-bracket"></span>
