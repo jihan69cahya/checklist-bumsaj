@@ -13,6 +13,6 @@ class EntryValue extends Model
 
     public function category()
     {
-        return $this->belongsTo(ChecklistCategory::class);
+        return $this->belongsTo(ChecklistCategory::class, 'category_id');
     }
 }
