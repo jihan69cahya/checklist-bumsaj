@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChecklistItem;
+use App\Models\EntryValue;
 use App\Models\Period;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,16 @@ class ChecklistController extends Controller
             ->groupBy('subcategory_id');
 
         $periods = Period::all();
+        $periods = $periods->map(function ($period)
+        {
+            $period->period_start_time = substr($period->period_start_time, 0, 5); // Remove seconds
+            $period->period_end_time = substr($period->period_end_time, 0, 5); // Remove seconds
+            return $period;
+        });
 
-        return view($view, compact('checklist_items', 'category_identifier', 'periods'));
+        $entry_values = EntryValue::where('category_id', $category_id)->get();
+
+
+        return view($view, compact('checklist_items', 'category_identifier', 'periods', 'entry_values'));
     }
 }
