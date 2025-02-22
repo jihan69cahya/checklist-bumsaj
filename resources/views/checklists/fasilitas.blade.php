@@ -13,11 +13,16 @@
         </button>
     </div>
 
-    <table class="w-full border border-collapse border-gray-300 table-auto mt-4">
+    <table class="w-full mt-4 border border-collapse border-gray-300 table-auto">
         <thead>
             <tr>
-                <th class="px-4 py-2 border border-gray-300">Ruangan</th>
-                <th class="px-4 py-2 border border-gray-300">Keterangan</th>
+                <th class="px-4 py-2 border border-gray-300" rowspan="2">Ruangan</th>
+                <th class="px-4 py-2 border border-gray-300" colspan="2">Kondisi</th>
+                <th class="px-4 py-2 border border-gray-300" rowspan="2">Keterangan</th>
+            </tr>
+            <tr>
+                <th class="border border-gray-300">B</th>
+                <th class="border border-gray-300">RK</th>
             </tr>
         </thead>
         <tbody>
@@ -35,6 +40,8 @@
                 @foreach ($subcategory_items as $item)
                     <tr>
                         <td class="px-4 py-2 border border-gray-300">{{ $item->item_name }}</td>
+                        <td class="px-4 py-2 border border-gray-300"></td>
+                        <td class="px-4 py-2 border border-gray-300"></td>
                         <td class="px-4 py-2 border border-gray-300">{{ $item->keterangan ?? '' }}</td>
                     </tr>
                 @endforeach

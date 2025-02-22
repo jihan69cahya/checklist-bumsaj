@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChecklistItem;
+use App\Models\Period;
 use Illuminate\Http\Request;
 
 class ChecklistController extends Controller
@@ -28,6 +29,8 @@ class ChecklistController extends Controller
             ->get()
             ->groupBy('subcategory_id');
 
-        return view($view, compact('checklist_items', 'category_identifier'));
+        $periods = Period::all();
+
+        return view($view, compact('checklist_items', 'category_identifier', 'periods'));
     }
 }
