@@ -23,17 +23,24 @@
             </div>
             <ul class="hidden w-full font-light" id="checklist-dropdown">
                 <li>
-                    <a class="block px-4 py-2 text-md" href="{{ route('checklist.fasilitas') }}">Fasilitas Gedung
-                        Terminal</a>
+                    <a class="block px-4 py-2 text-md"
+                        href="{{ route('checklist.show', ['category_identifier' => 'fasilitas-gedung-terminal']) }}">
+                        Fasilitas Gedung Terminal
+                    </a>
                 </li>
                 <li>
-                    <a class="block px-4 py-2 text-md" href="{{ route('checklist.kebersihan') }}">Kebersihan Gedung
-                        Terminal</a>
+                    <a class="block px-4 py-2 text-md"
+                        href="{{ route('checklist.show', ['category_identifier' => 'kebersihan-gedung-terminal']) }}">
+                        Kebersihan Gedung Terminal
+                    </a>
                 </li>
                 <li>
-                    <a class="block px-4 py-2 text-md" href="{{ route('checklist.curbside') }}">Kondisi Area
-                        Curbside</a>
+                    <a class="block px-4 py-2 text-md"
+                        href="{{ route('checklist.show', ['category_identifier' => 'curbside-area']) }}">
+                        Kondisi Area Curbside
+                    </a>
                 </li>
+
             </ul>
         </li>
         <li class="flex items-center gap-4 cursor-pointer">
