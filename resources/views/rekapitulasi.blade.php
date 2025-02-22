@@ -1,100 +1,95 @@
 @extends('layouts.app')
 
-@section('title', 'rekapitulasi')
+@section('title', 'Rekapitulasi')
 
 @section('content')
-        <h1 class="text-2xl font-bold">Rekapitulasi</h1>
+    <h1 class="text-2xl font-bold">Rekapitulasi</h1>
 
-        <div class="flex gap-4 mt-4">
-            <button id="dateBtn" class="bg-gray-200 px-4 py-2 rounded-md flex items-center gap-2">
-                <span id="selectedDate">Kamis, 13 Februari 2025</span>
-                <span class="fa-solid fa-calendar"></span>
-            </button>
-
-            <div class="relative">
-                <button id="facilityBtn" class="bg-gray-200 px-4 py-2 rounded-md flex items-center gap-2">
-                    <span id="selectedFacility">Fasilitas Terminal</span>
-                    <span class="fa-solid fa-chevron-down"></span>
-                </button>
-  
-                <ul id="facilityDropdown" class="absolute left-0 mt-2 w-48 bg-white shadow-md rounded-md hidden">
-                    <li class="px-4 py-2 cursor-pointer hover:bg-gray-200" onclick="selectFacility('Fasilitas Terminal')">Fasilitas Terminal</li>
-                    <li class="px-4 py-2 cursor-pointer hover:bg-gray-200" onclick="selectFacility('Kebersihan Terminal')">Kebersihan Terminal</li>
-                    <li class="px-4 py-2 cursor-pointer hover:bg-gray-200" onclick="selectFacility('Curbside Area')">Curbside Area</li>
-                </ul>
-            </div>
+    <div class="flex gap-4 mt-4">
+        <!-- Pilih Start Date -->
+        <div class="flex items-center gap-2">
+            <label for="startDate">Dari:</label>
+            <input type="date" id="startDate" class="bg-gray-200 px-4 py-2 rounded-md" value="{{ request('start_date', today()->format('Y-m-d')) }}">
         </div>
 
-        <table class="mt-6 w-full border border-collapse">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="border px-4 py-2">Nama Ruangan</th>
-                    <th class="border px-4 py-2">B</th>
-                    <th class="border px-4 py-2">RK</th>
-                    <th class="border px-4 py-2">KB</th>
-                    <th class="border px-4 py-2">K</th>
-                    <th class="border px-4 py-2">P</th>
-                    <th class="border px-4 py-2">L</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($subcategories as $subcategory)
-                    <tr>
-                        <td class="border px-4 py-2">{{ $subcategory->subcategory_name }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][1] ?? 0 }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][2] ?? 0 }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][4] ?? 0 }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][5] ?? 0 }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][6] ?? 0 }}</td>
-                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][7] ?? 0 }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <button class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
-            <span class="fa-solid fa-download"></span>
-            Download Rekapitulasi
-        </button>
-
-        <div id="dateCard" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-lg font-semibold mb-4">Pilih Tanggal</h2>
-            <input type="date" id="datePicker" class="p-2 border border-gray-300 rounded-md w-full">
-            <div class="flex justify-end gap-4 mt-4">
-                <button id="closeDateCard" class="px-4 py-2 bg-red-500 text-white rounded-md">Batal</button>
-                <button id="confirmDate" class="px-4 py-2 bg-blue-600 text-white rounded-md">Pilih</button>
-            </div>
+        <!-- Pilih End Date -->
+        <div class="flex items-center gap-2">
+            <label for="endDate">Sampai:</label>
+            <input type="date" id="endDate" class="bg-gray-200 px-4 py-2 rounded-md" value="{{ request('end_date', today()->format('Y-m-d')) }}">
         </div>
+
+        <!-- Pilih Kategori -->
+        <select id="categorySelect" class="bg-gray-200 px-4 py-2 rounded-md">
+            <option value="1" {{ $categoryId == 1 ? 'selected' : '' }}>Fasilitas Terminal</option>
+            <option value="2" {{ $categoryId == 2 ? 'selected' : '' }}>Kebersihan Terminal</option>
+            <option value="3" {{ $categoryId == 3 ? 'selected' : '' }}>Curbside Area</option>
+        </select>
+
+        <!-- Tombol Filter -->
+        <button id="filterBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md">Filter</button>
     </div>
 
+    <!-- Tabel Rekapitulasi -->
+    <table class="mt-6 w-full border border-collapse">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border px-4 py-2">Nama Ruangan</th>
+                @if ($categoryId == 1)
+                    <th class="border px-4 py-2">B</th>
+                    <th class="border px-4 py-2">RK</th>
+                @elseif ($categoryId == 2)
+                    <th class="border px-4 py-2">B</th>
+                    <th class="border px-4 py-2">KB</th>
+                    <th class="border px-4 py-2">K</th>
+                @elseif ($categoryId == 3)
+                    <th class="border px-4 py-2">P</th>
+                    <th class="border px-4 py-2">L</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($subcategories as $subcategory)
+                <tr>
+                    <td class="border px-4 py-2">{{ $subcategory->subcategory_name }}</td>
+
+                    @if ($categoryId == 1)
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][1] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][2] ?? 0 }}</td>
+                    @elseif ($categoryId == 2)
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][3] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][4] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][5] ?? 0 }}</td>
+                    @elseif ($categoryId == 3)
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][6] ?? 0 }}</td>
+                        <td class="border px-4 py-2">{{ $entries[$subcategory->id][7] ?? 0 }}</td>
+                    @endif
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Tombol Download -->
+    <button class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
+        <span class="fa-solid fa-download"></span>
+        Download Rekapitulasi
+    </button>
+
     <script>
-        document.getElementById("dateBtn").addEventListener("click", function() {
-            document.getElementById("dateCard").classList.remove("hidden");
-        });
+        document.addEventListener("DOMContentLoaded", function () {
+            function updateRekapitulasi() {
+                let startDate = document.getElementById("startDate").value;
+                let endDate = document.getElementById("endDate").value;
+                let selectedCategory = document.getElementById("categorySelect").value;
 
-        document.getElementById("closeDateCard").addEventListener("click", function() {
-            document.getElementById("dateCard").classList.add("hidden");
-        });
+                let url = new URL(window.location.href);
+                url.searchParams.set("start_date", startDate);
+                url.searchParams.set("end_date", endDate);
+                url.searchParams.set("category_id", selectedCategory);
 
-        document.getElementById("confirmDate").addEventListener("click", function() {
-            let selectedDate = document.getElementById("datePicker").value;
-            if (selectedDate) {
-                document.getElementById("selectedDate").textContent = new Date(selectedDate).toLocaleDateString('id-ID', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                });
-                document.getElementById("dateCard").classList.add("hidden");
+                window.location.href = url.toString();
             }
-        });
 
-        document.getElementById("facilityBtn").addEventListener("click", function() {
-            document.getElementById("facilityDropdown").classList.toggle("hidden");
+            document.getElementById("filterBtn").addEventListener("click", updateRekapitulasi);
         });
-
-        function selectFacility(name) {
-            document.getElementById("selectedFacility").textContent = name;
-            document.getElementById("facilityDropdown").classList.add("hidden");
-        }
     </script>
-
 @endsection
