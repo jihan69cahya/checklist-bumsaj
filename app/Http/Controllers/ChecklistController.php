@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChecklistEntry;
 use App\Models\ChecklistItem;
 use App\Models\EntryValue;
 use App\Models\Period;
@@ -42,19 +43,53 @@ class ChecklistController extends Controller
         $entry_values = EntryValue::where('checklist_category_id', $category_id)->get();
 
         // Pass data to the view
-        return view($view, compact('checklist_items', 'category_identifier', 'periods', 'entry_values'));
+        return view($view, compact('checklist_items', 'category_identifier', 'periods', 'entry_values', 'category_id'));
+    }
+
+    public function getEntriesByPeriod(Request $request)
+    {
+        $request->validate([
+            'checklist_category_id' => 'required|integer|exists:checklist_categories,id',
+            'period_id' => 'required|integer|exists:periods,id',
+            'entry_date' => 'required|date',
+        ]);
+
+        $categoryId = $request->input('checklist_category_id');
+        $periodId = $request->input('period_id');
+        $entryDate = $request->input('entry_date');
+
+        $entries = ChecklistEntry::where('period_id', $periodId)
+            ->where('entry_date', $entryDate)
+            ->whereHas('checklist_item', function ($query) use ($categoryId)
+            {
+                $query->where('checklist_category_id', $categoryId);
+            })
+            ->with('checklist_item.checklist_subcategory')
+            ->get();
+
+        return response()->json($entries);
     }
 
     public function saveEntryValue(Request $request)
     {
         $request->validate([
-            'checklist_item_id' => 'required|integer|exists:checklist_items,id',
+            'item_id' => 'required|integer|exists:checklist_items,id',
             'entry_value_id' => 'required|integer|exists:entry_values,id',
+            'period_id' => 'required|integer|exists:periods,id',
+            'entry_date' => 'required|date',
         ]);
 
-        ChecklistItem::where('id', $request->checklist_item_id)
-            ->update(['entry_value_id' => $request->entry_value_id]);
+        $entry = ChecklistEntry::updateOrCreate(
+            [
+                'checklist_item_id' => $request->item_id,
+                'period_id' => $request->period_id,
+                'entry_date' => $request->entry_date,
+            ],
+            [
+                'entry_value_id' => $request->entry_value_id,
+            ]
+        );
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'entry' => $entry]);
     }
 }
