@@ -32,5 +32,6 @@ Route::middleware('auth')->group(function ()
 
     Route::get('/rekapitulasi', [RekapitulasiController::class, 'showRekapitulasi'])->name('rekapitulasi');
 
+    Route::get('/checklist/entries-by-period', [ChecklistController::class, 'getEntriesByPeriod']);
     Route::get('/checklist/{category_identifier}', [ChecklistController::class, 'show'])->name('checklist.show');
 });

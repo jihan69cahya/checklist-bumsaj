@@ -14,7 +14,7 @@
         <div class="absolute hidden mt-2 bg-white border border-gray-300 rounded shadow-lg" id="period-dropdown-menu">
             @foreach ($periods as $period)
                 <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" data-period-id="{{ $period->id }}"
-                    href="#">
+                    data-start-time="{{ $period->start_time }}" data-end-time="{{ $period->end_time }}" href="#">
                     {{ $period->label }}: {{ $period->start_time }} - {{ $period->end_time }}
                 </a>
             @endforeach
@@ -80,10 +80,12 @@
                 const periodId = this.getAttribute('data-period-id');
                 const periodText = this.textContent;
 
-                document.getElementById('period-dropdown-button').innerHTML = `
+                const dropdownButton = document.getElementById('period-dropdown-button');
+                dropdownButton.innerHTML = `
                     ${periodText}
                     <span class="ml-2">▼</span>
                 `;
+                dropdownButton.setAttribute('data-period-id', periodId);
 
                 document.getElementById('period-dropdown-menu').classList.add('hidden');
 
@@ -101,7 +103,22 @@
         });
 
         function saveEntryValue(itemId, entryValueId) {
-            console.log(itemId, entryValueId);
+            const periodId = document.getElementById('period-dropdown-button').getAttribute('data-period-id');
+
+            if (!periodId) {
+                console.error('No period selected.');
+                return;
+            }
+
+            const entryDate = new Date().toISOString().split('T')[0];
+
+            const data = {
+                item_id: itemId,
+                entry_value_id: entryValueId,
+                period_id: periodId,
+                entry_date: entryDate,
+            };
+            console.log('Saving entry value:', data);
             // axios.post('/checklist/save-entry-value', {
             //     item_id: itemId,
             //     entry_value_id: entryValueId
@@ -115,40 +132,57 @@
         }
 
         function fetchTableData(periodId) {
-            axios.get(`/checklist/data?period_id=${periodId}`)
+            const categoryId = {{ $category_id }};
+            const entryDate = new Date().toISOString().split('T')[0];
+            const params = {
+                checklist_category_id: categoryId,
+                entry_date: entryDate,
+                period_id: periodId
+            };
+
+            axios.get('/checklist/entries-by-period', {
+                    params
+                })
                 .then(response => {
-                    const data = response.data;
-
-                    const tbody = document.querySelector('table tbody');
-                    tbody.innerHTML = '';
-
-                    data.checklist_items.forEach((subcategoryItems, subcategoryId) => {
-                        const subcategoryName = subcategoryItems[0].subcategory.name; // Updated column name
-
-                        tbody.innerHTML += `
-                            <tr>
-                                <td class="px-4 py-2 font-semibold bg-gray-200" colspan="${2 + data.entry_values.length}">
-                                    ${subcategoryName}
-                                </td>
-                            </tr>
-                        `;
-
-                        subcategoryItems.forEach(item => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td class="px-4 py-2 border border-gray-300">${item.name}</td> <!-- Updated column name -->
-                                    ${data.entry_values.map(entryValue => `
-                                                                                                                                                        <td class="border border-gray-300"></td>
-                                                                                                                                                    `).join('')}
-                                    <td class="px-4 py-2 border border-gray-300">${item.keterangan || ''}</td>
-                                </tr>
-                            `;
-                        });
-                    });
+                    const entries = response.data;
+                    console.log('Entries fetched:', entries);
                 })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
+                    console.error('Error fetching entries:', error);
                 });
+
         }
+
+        function getCurrentPeriod() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour * 60 + currentMinute;
+
+            let selectedPeriod = null;
+
+            document.querySelectorAll('#period-dropdown-menu a').forEach(link => {
+                const startTime = link.getAttribute('data-start-time');
+                const endTime = link.getAttribute('data-end-time');
+
+                const startHour = parseInt(startTime.split(':')[0]);
+                const startMinute = parseInt(startTime.split(':')[1]);
+                const startTotal = startHour * 60 + startMinute;
+
+                const endHour = parseInt(endTime.split(':')[0]);
+                const endMinute = parseInt(endTime.split(':')[1]);
+                const endTotal = endHour * 60 + endMinute;
+
+                if (currentTime >= startTotal && currentTime <= endTotal) {
+                    selectedPeriod = link;
+                }
+            });
+
+            if (selectedPeriod) {
+                selectedPeriod.click();
+            }
+        }
+
+        getCurrentPeriod();
     </script>
 @endsection
