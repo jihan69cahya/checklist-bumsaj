@@ -7,6 +7,9 @@ use App\Models\ChecklistItem;
 use App\Models\EntryValue;
 use App\Models\Period;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ChecklistController extends Controller
 {
@@ -70,26 +73,81 @@ class ChecklistController extends Controller
         return response()->json($entries);
     }
 
+    public function clearEntryValue(Request $request)
+    {
+        $itemId = $request->input('item_id');
+        $periodId = $request->input('period_id');
+        $entryDate = $request->input('entry_date');
+
+        $entry = ChecklistEntry::where('checklist_item_id', $itemId)
+            ->where('period_id', $periodId)
+            ->where('entry_date', $entryDate)
+            ->first();
+
+        if ($entry)
+        {
+            $entry->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry deleted successfully.',
+                'data' => $entry
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'No entry found to delete.',
+                'request' => [
+                    'checklist_item_id' => $itemId,
+                    'period_id' => $periodId,
+                    'entry_date' => $entryDate,
+                ]
+            ], 404);
+        }
+    }
+
     public function saveEntryValue(Request $request)
     {
-        $request->validate([
-            'item_id' => 'required|integer|exists:checklist_items,id',
-            'entry_value_id' => 'required|integer|exists:entry_values,id',
-            'period_id' => 'required|integer|exists:periods,id',
+        $validatedData = $request->validate([
+            'item_id' => 'required|integer',
+            'entry_value_id' => 'required|integer',
+            'period_id' => 'required|integer',
             'entry_date' => 'required|date',
+            'entry_time' => 'required|date_format:H:i:s', // Validate entry_time
         ]);
 
-        $entry = ChecklistEntry::updateOrCreate(
-            [
-                'checklist_item_id' => $request->item_id,
-                'period_id' => $request->period_id,
-                'entry_date' => $request->entry_date,
-            ],
-            [
-                'entry_value_id' => $request->entry_value_id,
-            ]
-        );
+        $userId = Auth::id();
 
-        return response()->json(['success' => true, 'entry' => $entry]);
+        if (!$userId)
+        {
+            return response()->json(['success' => false, 'error' => 'User not authenticated.'], 401);
+        }
+
+        try
+        {
+            $entry = ChecklistEntry::updateOrCreate(
+                [
+                    'checklist_item_id' => $validatedData['item_id'],
+                    'period_id' => $validatedData['period_id'],
+                    'entry_date' => $validatedData['entry_date'],
+                ],
+                [
+                    'user_id' => $userId,
+                    'checklist_item_id' => $validatedData['item_id'],
+                    'period_id' => $validatedData['period_id'],
+                    'entry_value_id' => $validatedData['entry_value_id'],
+                    'entry_date' => $validatedData['entry_date'],
+                    'entry_time' => $validatedData['entry_time'],
+                ]
+            );
+
+            return response()->json(['success' => true, 'entry' => $entry]);
+        }
+        catch (\Exception $e)
+        {
+            Log::error('Error saving entry value:', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 }

@@ -33,5 +33,7 @@ Route::middleware('auth')->group(function ()
     Route::get('/rekapitulasi', [RekapitulasiController::class, 'showRekapitulasi'])->name('rekapitulasi');
 
     Route::get('/checklist/entries-by-period', [ChecklistController::class, 'getEntriesByPeriod']);
+    Route::post('/checklist/clear-entry-value', [ChecklistController::class, 'clearEntryValue']);
+    Route::post('/checklist/save-entry-value', [ChecklistController::class, 'saveEntryValue']);
     Route::get('/checklist/{category_identifier}', [ChecklistController::class, 'show'])->name('checklist.show');
 });
