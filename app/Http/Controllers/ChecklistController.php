@@ -7,6 +7,9 @@ use App\Models\ChecklistItem;
 use App\Models\EntryValue;
 use App\Models\Period;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ChecklistController extends Controller
 {
@@ -70,26 +73,88 @@ class ChecklistController extends Controller
         return response()->json($entries);
     }
 
-    public function saveEntryValue(Request $request)
+    public function clearEntryValue(Request $request)
     {
-        $request->validate([
-            'item_id' => 'required|integer|exists:checklist_items,id',
-            'entry_value_id' => 'required|integer|exists:entry_values,id',
-            'period_id' => 'required|integer|exists:periods,id',
-            'entry_date' => 'required|date',
+        $itemId = $request->input('item_id');
+        $periodId = $request->input('period_id');
+        $entryDate = $request->input('entry_date');
+
+        $entry = ChecklistEntry::where('checklist_item_id', $itemId)
+            ->where('period_id', $periodId)
+            ->where('entry_date', $entryDate)
+            ->first();
+
+        if ($entry)
+        {
+            $entry->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry deleted successfully.',
+                'data' => $entry
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'No entry found to delete.',
+                'request' => [
+                    'checklist_item_id' => $itemId,
+                    'period_id' => $periodId,
+                    'entry_date' => $entryDate,
+                ]
+            ], 404);
+        }
+    }
+
+    public function saveEntryValues(Request $request)
+    {
+        $validatedData = $request->validate([
+            'entries' => 'required|array',
+            'entries.*.item_id' => 'required|integer',
+            'entries.*.entry_value_id' => 'required|integer',
+            'entries.*.period_id' => 'required|integer',
+            'entries.*.entry_date' => 'required|date',
+            'entries.*.entry_time' => 'required|date_format:H:i:s',
         ]);
 
-        $entry = ChecklistEntry::updateOrCreate(
-            [
-                'checklist_item_id' => $request->item_id,
-                'period_id' => $request->period_id,
-                'entry_date' => $request->entry_date,
-            ],
-            [
-                'entry_value_id' => $request->entry_value_id,
-            ]
-        );
+        $userId = Auth::id();
 
-        return response()->json(['success' => true, 'entry' => $entry]);
+        if (!$userId)
+        {
+            return response()->json(['success' => false, 'error' => 'User not authenticated.'], 401);
+        }
+
+        DB::beginTransaction();
+        try
+        {
+            foreach ($validatedData['entries'] as $entryData)
+            {
+                ChecklistEntry::updateOrCreate(
+                    [
+                        'checklist_item_id' => $entryData['item_id'],
+                        'period_id' => $entryData['period_id'],
+                        'entry_date' => $entryData['entry_date'],
+                    ],
+                    [
+                        'user_id' => $userId,
+                        'checklist_item_id' => $entryData['item_id'],
+                        'period_id' => $entryData['period_id'],
+                        'entry_value_id' => $entryData['entry_value_id'],
+                        'entry_date' => $entryData['entry_date'],
+                        'entry_time' => $entryData['entry_time'],
+                    ]
+                );
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Entries saved successfully.']);
+        }
+        catch (\Exception $e)
+        {
+            DB::rollBack();
+            Log::error('Error saving entry values:', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 }
