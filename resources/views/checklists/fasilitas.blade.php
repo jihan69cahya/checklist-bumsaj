@@ -3,6 +3,14 @@
 @section('checklist-title', 'Fasilitas Gedung Terminal')
 
 @section('checklist-content')
+    <div class="fixed z-10 top-0 hidden p-4 px-8 py-4 mt-4 text-center text-black transform -translate-x-1/2 bg-white border-[1px] border-blue-600 rounded-full shadow-md left-1/2"
+        id="snackbar">
+        <span>Anda memiliki perubahan yang belum disimpan.</span>
+        <button class="px-3 py-2 ml-4 text-sm text-white bg-blue-600 rounded-full hover:bg-blue-700"
+            id="snackbar-button">Submit
+            Sekarang</button>
+    </div>
+
     <h1 class="mb-2 text-2xl font-bold">Checklist Fasilitas Terminal</h1>
     <p class="font-bold text-gray-700">Kamis, 13 Februari 2025</p>
 
@@ -72,6 +80,24 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const snackbar = document.getElementById('snackbar');
+            const snackbarButton = document.getElementById('snackbar-button');
+
+            // Show snackbar when a radio button is clicked
+            document.querySelectorAll('.entry-value-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        snackbar.classList.remove('hidden');
+                    }
+                });
+            });
+
+            snackbarButton.addEventListener('click', function() {
+                document.getElementById('submit-button').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+
             document.getElementById('period-dropdown-button').addEventListener('click', function() {
                 const dropdownMenu = document.getElementById('period-dropdown-menu');
                 dropdownMenu.classList.toggle('hidden');
@@ -129,7 +155,7 @@
                     })
                     .then(response => {
                         console.log('Entry values saved:', response.data);
-                        alert('Data berhasil disimpan!');
+                        snackbar.classList.add('hidden');
                     })
                     .catch(error => {
                         console.error('Error saving entry values:', error);
