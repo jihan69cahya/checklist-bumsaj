@@ -172,6 +172,10 @@
                     period_id: periodId
                 };
 
+                document.querySelectorAll('.entry-value-radio').forEach(radio => {
+                    radio.checked = false;
+                });
+
                 axios.get('/checklist/entries-by-period', {
                         params
                     })
