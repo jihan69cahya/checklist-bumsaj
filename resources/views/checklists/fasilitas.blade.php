@@ -65,6 +65,8 @@
             @endforeach
         </tbody>
     </table>
+
+    <button class="px-4 py-2 mt-4 text-white bg-blue-500 rounded" id="submit-button">Submit</button>
 @endsection
 
 @section('scripts')
@@ -84,9 +86,9 @@
 
                     const dropdownButton = document.getElementById('period-dropdown-button');
                     dropdownButton.innerHTML = `
-            ${periodText}
-            <span class="ml-2">▼</span>
-        `;
+                        ${periodText}
+                        <span class="ml-2">▼</span>
+                    `;
                     dropdownButton.setAttribute('data-period-id', periodId);
 
                     document.getElementById('period-dropdown-menu').classList.add('hidden');
@@ -95,51 +97,9 @@
                 });
             });
 
-            document.querySelectorAll('.entry-value-radio').forEach(radio => {
-                radio.addEventListener('click', function(event) {
-                    const itemId = this.getAttribute('data-item-id');
-                    const entryValueId = this.getAttribute('data-entry-value-id');
-
-                    if (this.checked) {
-                        this.checked = false;
-
-                        clearEntryValue(itemId);
-                    } else {
-                        saveEntryValue(itemId, entryValueId);
-                    }
-                });
-            });
-
-            function clearEntryValue(itemId) {
-                const periodId = document.getElementById('period-dropdown-button').getAttribute('data-period-id');
-
-                if (!periodId) {
-                    console.error('No period selected.');
-                    return;
-                }
-
-                const now = new Date();
-                const entryDate = now.toISOString().split('T')[0];
-
-                const data = {
-                    item_id: itemId,
-                    period_id: periodId,
-                    entry_date: entryDate,
-                };
-
-                console.log('Clearing entry value:', data);
-
-                axios.post('/checklist/clear-entry-value', data)
-                    .then(response => {
-                        console.log('Entry value cleared:', response.data);
-                    })
-                    .catch(error => {
-                        console.error('Error clearing entry value:', error);
-                    });
-            }
-
-            function saveEntryValue(itemId, entryValueId) {
-                const periodId = document.getElementById('period-dropdown-button').getAttribute('data-period-id');
+            document.getElementById('submit-button').addEventListener('click', function() {
+                const periodId = document.getElementById('period-dropdown-button').getAttribute(
+                    'data-period-id');
 
                 if (!periodId) {
                     console.error('No period selected.');
@@ -150,24 +110,32 @@
                 const entryDate = now.toISOString().split('T')[0];
                 const entryTime = now.toTimeString().split(' ')[0];
 
+                const entries = [];
+                document.querySelectorAll('.entry-value-radio:checked').forEach(radio => {
+                    const itemId = radio.getAttribute('data-item-id');
+                    const entryValueId = radio.getAttribute('data-entry-value-id');
 
-                const data = {
-                    item_id: itemId,
-                    entry_value_id: entryValueId,
-                    period_id: periodId,
-                    entry_date: entryDate,
-                    entry_time: entryTime,
-                };
-                console.log('Saving entry value:', data);
+                    entries.push({
+                        item_id: itemId,
+                        entry_value_id: entryValueId,
+                        period_id: periodId,
+                        entry_date: entryDate,
+                        entry_time: entryTime,
+                    });
+                });
 
-                axios.post('/checklist/save-entry-value', data)
+                axios.post('/checklist/save-entry-values', {
+                        entries
+                    })
                     .then(response => {
-                        console.log('Entry value saved:', response.data);
+                        console.log('Entry values saved:', response.data);
+                        alert('Data berhasil disimpan!');
                     })
                     .catch(error => {
-                        console.error('Error saving entry value:', error);
+                        console.error('Error saving entry values:', error);
+                        alert('Terjadi kesalahan saat menyimpan data.');
                     });
-            }
+            });
 
             function fetchTableData(periodId) {
                 const categoryId = {{ $category_id }};
@@ -182,7 +150,7 @@
                         params
                     })
                     .then(response => {
-                        const entries = response.data
+                        const entries = response.data;
                         console.log(entries);
 
                         entries.forEach(entry => {

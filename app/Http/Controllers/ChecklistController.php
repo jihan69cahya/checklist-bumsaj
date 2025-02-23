@@ -107,14 +107,15 @@ class ChecklistController extends Controller
         }
     }
 
-    public function saveEntryValue(Request $request)
+    public function saveEntryValues(Request $request)
     {
         $validatedData = $request->validate([
-            'item_id' => 'required|integer',
-            'entry_value_id' => 'required|integer',
-            'period_id' => 'required|integer',
-            'entry_date' => 'required|date',
-            'entry_time' => 'required|date_format:H:i:s', // Validate entry_time
+            'entries' => 'required|array',
+            'entries.*.item_id' => 'required|integer',
+            'entries.*.entry_value_id' => 'required|integer',
+            'entries.*.period_id' => 'required|integer',
+            'entries.*.entry_date' => 'required|date',
+            'entries.*.entry_time' => 'required|date_format:H:i:s',
         ]);
 
         $userId = Auth::id();
@@ -124,29 +125,35 @@ class ChecklistController extends Controller
             return response()->json(['success' => false, 'error' => 'User not authenticated.'], 401);
         }
 
+        DB::beginTransaction();
         try
         {
-            $entry = ChecklistEntry::updateOrCreate(
-                [
-                    'checklist_item_id' => $validatedData['item_id'],
-                    'period_id' => $validatedData['period_id'],
-                    'entry_date' => $validatedData['entry_date'],
-                ],
-                [
-                    'user_id' => $userId,
-                    'checklist_item_id' => $validatedData['item_id'],
-                    'period_id' => $validatedData['period_id'],
-                    'entry_value_id' => $validatedData['entry_value_id'],
-                    'entry_date' => $validatedData['entry_date'],
-                    'entry_time' => $validatedData['entry_time'],
-                ]
-            );
+            foreach ($validatedData['entries'] as $entryData)
+            {
+                ChecklistEntry::updateOrCreate(
+                    [
+                        'checklist_item_id' => $entryData['item_id'],
+                        'period_id' => $entryData['period_id'],
+                        'entry_date' => $entryData['entry_date'],
+                    ],
+                    [
+                        'user_id' => $userId,
+                        'checklist_item_id' => $entryData['item_id'],
+                        'period_id' => $entryData['period_id'],
+                        'entry_value_id' => $entryData['entry_value_id'],
+                        'entry_date' => $entryData['entry_date'],
+                        'entry_time' => $entryData['entry_time'],
+                    ]
+                );
+            }
 
-            return response()->json(['success' => true, 'entry' => $entry]);
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Entries saved successfully.']);
         }
         catch (\Exception $e)
         {
-            Log::error('Error saving entry value:', ['error' => $e->getMessage()]);
+            DB::rollBack();
+            Log::error('Error saving entry values:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
