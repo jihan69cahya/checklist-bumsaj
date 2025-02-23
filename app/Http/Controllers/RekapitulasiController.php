@@ -41,7 +41,7 @@ class RekapitulasiController extends Controller
         return view('rekapitulasi', compact('subcategories', 'entries', 'categoryId', 'entry_values'));
     }
 
-    
+
 
     public function downloadXls(Request $request)
     {
@@ -62,7 +62,6 @@ class RekapitulasiController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Konversi nama hari ke Bahasa Indonesia
         $dayMap = [
             'Sunday'    => 'Minggu',
             'Monday'    => 'Senin',
@@ -111,116 +110,112 @@ class RekapitulasiController extends Controller
         // **Mengisi Data Checklist**
         $row = 8;
         $no = 1;
-        foreach ($subcategories as $subcategory) {
-            $sheet->setCellValue("A$row", $no++);
-            $sheet->setCellValue("B$row", $subcategory->name);
+        foreach ($subcategories as $subcategory)
+        {
+            $sheet->setCellValue("A$row", join(" ", [$no++, $subcategory->name]));
             $sheet->getStyle("A$row:D$row")->getFont()->setBold(true);
+            $sheet->mergeCells("A$row:D$row");
+            $sheet->getStyle("A$row:D$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
             $row++;
-            
-            foreach ($subcategory->items ?? collect() as $item) {
-                if ($categoryType == 1) {
+
+            foreach ($subcategory->items ?? collect() as $item)
+            {
+                if ($categoryType == 1)
+                {
                     $baik = $entries[$item->id][1] ?? '0';
                     $rusak = $entries[$item->id][2] ?? '0';
                     $data = [" ", $item->name, $baik, $rusak];
-                } elseif ($categoryType == 2) {
+                }
+                elseif ($categoryType == 2)
+                {
                     $bersih = $entries[$item->id][1] ?? '0';
                     $kurangBersih = $entries[$item->id][2] ?? '0';
                     $kotor = $entries[$item->id][3] ?? '0';
                     $data = [" ", $item->name, $bersih, $kurangBersih, $kotor];
-                } elseif ($categoryType == 3) {
+                }
+                elseif ($categoryType == 3)
+                {
                     $padat = $entries[$item->id][1] ?? '0';
                     $lancar = $entries[$item->id][2] ?? '0';
                     $data = [" ", $item->name, $padat, $lancar];
                 }
-               
+
                 $sheet->fromArray([$data], null, "A$row");
-                $sheet->getStyle("A$row:D$row")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                
+
                 $range2 = "A$row:$lastColumn$row";
                 $sheet->getStyle($range2)
-                ->getFont()->setSize(12)->setName('Times New Roman');
-                foreach (range('A', $lastColumn) as $col) {
-                    if ($col === 'B') {
+                    ->getFont()->setSize(12)->setName('Times New Roman');
+                foreach (range('A', $lastColumn) as $col)
+                {
+                    if ($col === 'B')
+                    {
                         // Kolom B (Ruangan) rata kiri
                         $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    } else {
+                    }
+                    else
+                    {
                         // Kolom lain rata tengah
                         $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     }
                 }
-                #if($item->id !== $subcategory->items->last()->id){
-                    $row++;
-                #}
+                $row++;
             }
-        
-            // Memasukkan data ke dalam sheet
-            #$sheet->fromArray([$data], null, "A$row");
-        
-            // Tentukan kolom terakhir berdasarkan jumlah data
-            $lastColumn = chr(65 + count($data) - 1);
-            $range = "A$row:$lastColumn$row";
-        
-            // Styling untuk font
-            $sheet->getStyle($range)
-                ->getFont()->setSize(12)->setName('Times New Roman');
-        
-            // Styling alignment
-            foreach (range('A', $lastColumn) as $col) {
-                if ($col === 'B') {
+
+            foreach (range('A', $lastColumn) as $col)
+            {
+                if ($col === 'B')
+                {
                     // Kolom B (Ruangan) rata kiri
                     $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                } else {
+                }
+                else
+                {
                     // Kolom lain rata tengah
                     $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                 }
             }
-        
-            // Styling border
-            $sheet->getStyle($range)
-                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        
-            #$row++;
         }
-        
-        $sheet->getStyle("A8")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle("A8:{$lastColumn}8")
-                ->getFont()->setSize(12)->setName('Times New Roman');
-        // **Border untuk seluruh tabel**
+
         $sheet->getStyle("A7:{$lastColumn}" . ($row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-        // **Menyesuaikan lebar kolom**
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(50);
-        foreach (range('C', $lastColumn) as $col) {
+        foreach (range('C', $lastColumn) as $col)
+        {
             $sheet->getColumnDimension($col)->setWidth(10);
         }
 
-        // **Keterangan kategori**
-        $signatureRow = $row + 2;
+        $signatureRow = $row + 1;
         $categoryNotes = [
             1 => "KET:  B: Baik     RK: Rusak",
             2 => "KET:  B: Bersih     KB: Kurang Bersih     K: Kotor",
             3 => "KET:  P: Padat     L: Lancar"
         ];
-        $sheet->setCellValue("A{$signatureRow}", $categoryNotes[$categoryType] ?? '');
-        $sheet->getStyle("A{$signatureRow}")
-            ->getFont()->setSize(12)->setName('Times New Roman');
 
-        // **Tanda Tangan**
+        $sheet->setCellValue("A{$signatureRow}", $categoryNotes[$categoryType] ?? '');
         $sheet->setCellValue("A" . ($signatureRow + 2), "Mengetahui");
         $sheet->setCellValue("A" . ($signatureRow + 3), "Koordinator {$category->name}");
         $sheet->setCellValue("A" . ($signatureRow + 4), "Hygiene & Sanitasi");
-        $sheet->setCellValue("A" . ($signatureRow + 6), auth()->user()->name);
+        $sheet->setCellValue("A" . ($signatureRow + 8), "Romi Yosep Sigar");
 
-        foreach (["A" . ($signatureRow + 2), "A" . ($signatureRow + 3), "A" . ($signatureRow + 4), "A" . ($signatureRow + 6)] as $boldCell) {
+        foreach (["A" . ($signatureRow + 2), "A" . ($signatureRow + 3), "A" . ($signatureRow + 4), "A" . ($signatureRow + 6)] as $boldCell)
+        {
             $sheet->getStyle($boldCell)->getFont()->setBold(true)->setSize(12)->setName('Times New Roman');
         }
+
+        $sheet->getStyle("A7:$lastColumn" . ($signatureRow + 8))
+            ->getFont()->setSize(12)->setName('Times New Roman');
+
+        $spreadsheet->getActiveSheet()->setSelectedCell('');
+
+
 
         // **Export ke Excel**
         $filename = "rekapitulasi_" . str_replace(' ', '_', $category->name) . "_{$startDate}_{$endDate}.xls";
         $writer = new Xls($spreadsheet);
 
-        $response = new StreamedResponse(function () use ($writer) {
+        $response = new StreamedResponse(function () use ($writer)
+        {
             $writer->save('php://output');
         });
 
@@ -229,10 +224,4 @@ class RekapitulasiController extends Controller
 
         return $response;
     }
-
-
-
-
-
-
 }
