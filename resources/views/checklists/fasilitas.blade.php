@@ -3,6 +3,9 @@
 @section('checklist-title', 'Fasilitas Gedung Terminal')
 
 @section('checklist-content')
+    <h1 class="mb-2 text-2xl font-bold">Checklist Fasilitas Terminal</h1>
+    <p class="font-bold text-gray-700">Kamis, 13 Februari 2025</p>
+
     <div class="fixed z-10 top-0 hidden p-4 px-8 py-4 mt-4 text-center text-black transform -translate-x-1/2 bg-white border-[1px] border-blue-600 rounded-full shadow-md left-1/2"
         id="snackbar">
         <span>Anda memiliki perubahan yang belum disimpan.</span>
@@ -10,9 +13,6 @@
             id="snackbar-button">Submit
             Sekarang</button>
     </div>
-
-    <h1 class="mb-2 text-2xl font-bold">Checklist Fasilitas Terminal</h1>
-    <p class="font-bold text-gray-700">Kamis, 13 Februari 2025</p>
 
     <div class="relative mt-4">
         <button class="flex items-center px-4 py-2 text-black bg-gray-300 rounded" id="period-dropdown-button">

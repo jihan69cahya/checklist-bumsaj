@@ -150,12 +150,12 @@ class RekapitulasiController extends Controller
                     if ($col === 'B')
                     {
                         // Kolom B (Ruangan) rata kiri
-                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                     }
                     else
                     {
                         // Kolom lain rata tengah
-                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     }
                 }
                 $row++;
