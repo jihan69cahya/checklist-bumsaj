@@ -25,4 +25,10 @@ class ChecklistSubcategory extends Model
     {
         return $this->belongsTo(ChecklistCategory::class);
     }
+
+    public function items()
+    {
+        return $this->hasMany(ChecklistItem::class);
+    }
+
 }

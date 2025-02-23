@@ -57,11 +57,17 @@
     </table>
 
     <!-- Tombol Download -->
-    <a href="{{ route('rekapitulasi.download', ['start_date' => request('start_date', today()->format('Y-m-d')), 'end_date' => request('end_date', today()->format('Y-m-d')), 'category_id' => request('category_id', 1)]) }}" 
-    class="flex items-center gap-2 px-4 py-2 mt-6 text-white bg-blue-600 rounded-md">
-        <span class="fa-solid fa-download"></span>
-        Download Rekapitulasi
-    </a>
+    <form action="{{ route('rekapitulasi.download') }}" method="GET">
+        <input type="hidden" name="start_date" value="{{ request('start_date', today()->format('Y-m-d')) }}">
+        <input type="hidden" name="end_date" value="{{ request('end_date', today()->format('Y-m-d')) }}">
+        <input type="hidden" name="category_id" value="{{ request('category_id', 1) }}">
+
+        <button type="submit" class="flex items-center gap-2 px-4 py-2 mt-6 text-white bg-blue-600 rounded-md">
+            <span class="fa-solid fa-download"></span>
+            Download Rekapitulasi
+        </button>
+    </form>
+
 
 
 
