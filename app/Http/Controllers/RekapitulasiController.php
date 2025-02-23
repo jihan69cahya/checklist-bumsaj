@@ -50,8 +50,8 @@ class RekapitulasiController extends Controller
         $startDate = $request->get('start_date', today()->format('Y-m-d'));
         $endDate = $request->get('end_date', today()->format('Y-m-d'));
 
-        $subcategories = $category->subcategories;
-        $entries = ChecklistEntry::whereIn('checklist_item_id', $subcategories->pluck('id'))
+        $subcategories = $category->subcategories()->with('items')->get();
+        $entries = ChecklistEntry::whereIn('checklist_item_id', $subcategories->pluck('items')->flatten()->pluck('id')->unique())
             ->whereBetween('entry_date', [$startDate, $endDate])
             ->select('checklist_item_id', 'entry_value_id', DB::raw('count(*) as total'))
             ->groupBy('checklist_item_id', 'entry_value_id')
@@ -112,23 +112,49 @@ class RekapitulasiController extends Controller
         $row = 8;
         $no = 1;
         foreach ($subcategories as $subcategory) {
-            if ($categoryType == 1) {
-                $baik = $entries[$subcategory->id][1] ?? '0';
-                $rusak = $entries[$subcategory->id][2] ?? '0';
-                $data = [$no++, $subcategory->name, $baik, $rusak];
-            } elseif ($categoryType == 2) {
-                $bersih = $entries[$subcategory->id][1] ?? '0';
-                $kurangBersih = $entries[$subcategory->id][2] ?? '0';
-                $kotor = $entries[$subcategory->id][3] ?? '0';
-                $data = [$no++, $subcategory->name, $bersih, $kurangBersih, $kotor];
-            } elseif ($categoryType == 3) {
-                $padat = $entries[$subcategory->id][1] ?? '0';
-                $lancar = $entries[$subcategory->id][2] ?? '0';
-                $data = [$no++, $subcategory->name, $padat, $lancar];
+            $sheet->setCellValue("A$row", $no++);
+            $sheet->setCellValue("B$row", $subcategory->name);
+            $sheet->getStyle("A$row:D$row")->getFont()->setBold(true);
+            $row++;
+            
+            foreach ($subcategory->items ?? collect() as $item) {
+                if ($categoryType == 1) {
+                    $baik = $entries[$item->id][1] ?? '0';
+                    $rusak = $entries[$item->id][2] ?? '0';
+                    $data = [" ", $item->name, $baik, $rusak];
+                } elseif ($categoryType == 2) {
+                    $bersih = $entries[$item->id][1] ?? '0';
+                    $kurangBersih = $entries[$item->id][2] ?? '0';
+                    $kotor = $entries[$item->id][3] ?? '0';
+                    $data = [" ", $item->name, $bersih, $kurangBersih, $kotor];
+                } elseif ($categoryType == 3) {
+                    $padat = $entries[$item->id][1] ?? '0';
+                    $lancar = $entries[$item->id][2] ?? '0';
+                    $data = [" ", $item->name, $padat, $lancar];
+                }
+               
+                $sheet->fromArray([$data], null, "A$row");
+                $sheet->getStyle("A$row:D$row")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                
+                $range2 = "A$row:$lastColumn$row";
+                $sheet->getStyle($range2)
+                ->getFont()->setSize(12)->setName('Times New Roman');
+                foreach (range('A', $lastColumn) as $col) {
+                    if ($col === 'B') {
+                        // Kolom B (Ruangan) rata kiri
+                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    } else {
+                        // Kolom lain rata tengah
+                        $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    }
+                }
+                #if($item->id !== $subcategory->items->last()->id){
+                    $row++;
+                #}
             }
         
             // Memasukkan data ke dalam sheet
-            $sheet->fromArray([$data], null, "A$row");
+            #$sheet->fromArray([$data], null, "A$row");
         
             // Tentukan kolom terakhir berdasarkan jumlah data
             $lastColumn = chr(65 + count($data) - 1);
@@ -153,10 +179,12 @@ class RekapitulasiController extends Controller
             $sheet->getStyle($range)
                 ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         
-            $row++;
+            #$row++;
         }
         
-
+        $sheet->getStyle("A8")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A8:{$lastColumn}8")
+                ->getFont()->setSize(12)->setName('Times New Roman');
         // **Border untuk seluruh tabel**
         $sheet->getStyle("A7:{$lastColumn}" . ($row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
