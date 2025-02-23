@@ -44,4 +44,17 @@ class ChecklistController extends Controller
         // Pass data to the view
         return view($view, compact('checklist_items', 'category_identifier', 'periods', 'entry_values'));
     }
+
+    public function saveEntryValue(Request $request)
+    {
+        $request->validate([
+            'checklist_item_id' => 'required|integer|exists:checklist_items,id',
+            'entry_value_id' => 'required|integer|exists:entry_values,id',
+        ]);
+
+        ChecklistItem::where('id', $request->checklist_item_id)
+            ->update(['entry_value_id' => $request->entry_value_id]);
+
+        return response()->json(['success' => true]);
+    }
 }
