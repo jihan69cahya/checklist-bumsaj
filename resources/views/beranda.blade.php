@@ -5,7 +5,7 @@
 @section('content')
     <h1 class="mb-4 text-2xl font-bold">Beranda</h1>
 
-    <div class="grid grid-cols-3 gap-4 mb-6">
+    <div id="infoCard" class="grid grid-cols-3 gap-4 mb-6">
         <div class="flex flex-col items-end p-4 text-white bg-yellow-500 rounded-lg">
             <div class="flex items-end gap-4">
                 <span class="text-2xl font-bold" id="completed-checklists"></span>
@@ -25,11 +25,12 @@
                 <span class="text-2xl font-bold" id="time-left"></span>
                 <i class="text-4xl fa-regular fa-hourglass"></i>
             </div>
-            <p class="m-2 text-lg">Menuju periode berikutnya</p>
+            <p class="m-2 text-lg" id="period-desc">Menuju periode berikutnya</p>
         </div>
     </div>
 
     <p class="mb-2 font-bold">Kamis, 13 Februari 2025</p>
+    <p id="periodeMessage" class="hidden text-8xl">Periode Berakhir</p>
 
     <div class="flex flex-col w-full gap-4" id="progress-container">
 
@@ -39,8 +40,13 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const periods = @json($periods);
 
+            const periods = @json($periods);
+            const itemsCountByCategory = @json($items_count_by_category);
+            const entriesCountByCategory = @json($entries_count_by_category);
+            const itemsCountBySubCategory = @json($items_count_by_subcategory);
+            const entriesCountBySubCategory = @json($entries_count_by_subcategory);
+            const entriesCountByCategoryToday = @json($entries_count_by_category_today);
             function timeToMinutes(time) {
                 const [hours, minutes, seconds] = time.split(':')
                 return parseInt(hours) * 60 + parseInt(minutes)
@@ -87,17 +93,21 @@
                 } else {
                     document.getElementById('time-left').innerText = `${timeLeft} menit`
                 }
+            } else {
+                document.getElementById('period-desc').innerText = 'Periode Berakhir'
+                //document.getElementById("periodeMessage").classList.remove("hidden")
+                //document.getElementById("infoCard").classList.add("hidden");
+                dayRecap(itemsCountBySubCategory,entriesCountByCategoryToday)
             }
 
-            console.log('Current period id:', currentPeriod.id);
+            //console.log('Current period id:', currentPeriod.id)
 
-            const itemsCountByCategory = @json($items_count_by_category);
-            const entriesCountByCategory = @json($entries_count_by_category);
+            
             let completedChecklist = 0
             let unCompletedChecklist = itemsCountByCategory.length
 
-            console.log(itemsCountByCategory);
-            console.log(entriesCountByCategory);
+            //console.log(itemsCountByCategory);
+            //console.log(entriesCountByCategory);
 
             for (const [idx, category] of itemsCountByCategory.entries()) {
                 if (category.checklist_items_count == entriesCountByCategory[idx].checklist_entries_count) {
@@ -111,23 +121,73 @@
 
             const container = document.getElementById('progress-container')
 
-            itemsCountByCategory.forEach((item, idx) => {
-                const card = document.createElement('div');
-                card.classList.add('w-full', 'flex', 'justify-between', 'border-[1px]', 'border-gray-500',
-                    'px-4', 'py-2', 'rounded-md');
+            // itemsCountByCategory.forEach((item, idx) => {
+            //     const card = document.createElement('div');
+            //     card.classList.add('w-full', 'flex', 'justify-between', 'border-[1px]', 'border-gray-500',
+            //         'px-4', 'py-2', 'rounded-md');
 
-                const percentage = item.checklist_items_count > 0 ?
-                    (Math.floor((entriesCountByCategory[idx].checklist_entries_count / item
-                        .checklist_items_count) * 100)) :
-                    0;
+            //     const percentage = item.checklist_items_count > 0 ?
+            //         (Math.floor((entriesCountByCategory[idx].checklist_entries_count / item
+            //             .checklist_items_count) * 100)) :
+            //         0;
 
-                card.innerHTML = `
-                    <span>${item.name}</span>
-                    <span>${entriesCountByCategory[idx].checklist_entries_count === 0 ? '0%' : `${percentage}%`}</span>
-                `;
+            //     card.innerHTML = `
+            //         <span>${item.name}</span>
+            //         <span>${entriesCountByCategory[idx].checklist_entries_count === 0 ? '0%' : `${percentage}%`}</span>
+            //     `;
 
-                container.appendChild(card);
-            });
+            //     container.appendChild(card);
+            // });
+
+            function dayRecap(itemsCountBySubCategory, entriesCountByCategoryToday) {
+                console.log(entriesCountByCategoryToday);
+                const container = document.getElementById('progress-container');
+                container.innerHTML = '';
+
+                // Group entries by period
+                const periodProgress = {};
+
+                const validPeriods = [1, 2, 3, 4, 5, 6];
+
+                entriesCountByCategoryToday.forEach(entry => {
+                    const period = entry.period_id;
+                    if (!validPeriods.includes(period)) return; // Lewati jika bukan periode yang diinginkan
+                    
+                    if (!periodProgress[period]) {
+                        periodProgress[period] = { totalEntries: 0, totalItems: 0 };
+                    }
+                    periodProgress[period].totalEntries += entry.checklist_entries_count;
+                });
+
+                itemsCountBySubCategory.forEach(item => {
+                    const period = item.period_id;
+                    if (!validPeriods.includes(period)) return; // Lewati jika bukan periode yang diinginkan
+                    
+                    if (!periodProgress[period]) {
+                        periodProgress[period] = { totalEntries: 0, totalItems: 0 };
+                    }
+                    periodProgress[period].totalItems += item.checklist_items_count;
+                });
+
+
+                // Render progress per period
+                Object.keys(periodProgress).forEach(period => {
+                    const { totalEntries, totalItems } = periodProgress[period];
+                    const percentage = totalItems > 0 ? Math.floor((totalEntries / totalItems) * 100) : 0;
+
+                    const card = document.createElement('div');
+                    card.classList.add('w-full', 'flex', 'justify-between', 'border-[1px]', 'border-gray-500',
+                        'px-4', 'py-2', 'rounded-md');
+                    console.log(period)
+                    card.innerHTML = `
+                        <span>Period ${period}</span>
+                        <span>${totalEntries === 0 ? '0%' : `${percentage}%`}</span>
+                    `;
+
+                    container.appendChild(card);
+                });
+            }
+
 
         })
     </script>
