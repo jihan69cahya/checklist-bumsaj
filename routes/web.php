@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RekapitulasiController;
 use App\Http\Controllers\ChecklistController;
@@ -25,10 +26,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function ()
 {
-    Route::get('/', function ()
-    {
-        return view('beranda');
-    })->name('beranda');
+    Route::get('/', [BerandaController::class, 'show'])->name('beranda');
 
     Route::get('/rekapitulasi', [RekapitulasiController::class, 'showRekapitulasi'])->name('rekapitulasi');
 
