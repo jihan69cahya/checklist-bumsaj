@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RekapitulasiController;
 use App\Http\Controllers\ChecklistController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TopbarController;
 
 
 Route::get('/rekapitulasi/download', [RekapitulasiController::class, 'downloadXLS'])->name('rekapitulasi.download');
@@ -34,4 +35,5 @@ Route::middleware('auth')->group(function ()
     Route::post('/checklist/clear-entry-value', [ChecklistController::class, 'clearEntryValue']);
     Route::post('/checklist/save-entry-values', [ChecklistController::class, 'saveEntryValues']);
     Route::get('/checklist/{category_identifier}', [ChecklistController::class, 'show'])->name('checklist.show');
+    Route::get('/topbar/username', [TopbarController::class, 'getUserName']);
 });
