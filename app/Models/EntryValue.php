@@ -9,9 +9,9 @@ class EntryValue extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'value_code', 'value_description'];
+    protected $fillable = ['checklist_category_id', 'value_code', 'value_description'];
 
-    public function category()
+    public function checklist_category()
     {
         return $this->belongsTo(ChecklistCategory::class);
     }

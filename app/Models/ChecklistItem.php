@@ -9,14 +9,14 @@ class ChecklistItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'item_name', 'description'];
+    protected $fillable = ['checklist_category_id', 'item_name', 'description'];
 
-    public function category()
+    public function checklist_category()
     {
         return $this->belongsTo(ChecklistCategory::class);
     }
 
-    public function subcategory()
+    public function checklist_subcategory()
     {
         return $this->belongsTo(ChecklistSubcategory::class);
     }

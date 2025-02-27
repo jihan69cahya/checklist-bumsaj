@@ -25,9 +25,9 @@ class PeriodSeeder extends Seeder
             $endTime = sprintf('%02d:00:00', $start + 2);
 
             Period::create([
-                'period_start_time' => $startTime,
-                'period_end_time' => $endTime,
-                'period_label' => 'Periode ' . $periodCounter++
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'label' => 'Periode ' . $periodCounter++
             ]);
         }
     }
