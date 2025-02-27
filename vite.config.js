@@ -8,4 +8,7 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        outDir: "dist", // Pastikan output di folder "dist" agar sesuai dengan Vercel
+    },
 });
