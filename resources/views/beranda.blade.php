@@ -96,6 +96,7 @@
                 } else {
                     document.getElementById('time-left').innerText = `${timeLeft} menit`
                 }
+                dayRecap(itemsCountByCategory, groupedResults)
             } else {
                 document.getElementById('period-desc').innerText = 'Periode Berakhir'
                 dayRecap(itemsCountByCategory, groupedResults)
@@ -130,9 +131,27 @@
                         'border-gray-500', 'px-4', 'py-2', 'rounded-md', 'flex', 'justify-between',
                         'items-center');
 
+                    // Create a div to wrap periodLabel, start_time, and end_time
+                    const periodInfoContainer = document.createElement('div');
+                    periodInfoContainer.classList.add('flex', 'items-center', 'gap-2');
+
+                    // Add period label
                     const periodLabel = document.createElement('span');
                     periodLabel.innerText = groupedResults[result].period_label;
-                    periodLabelContainer.appendChild(periodLabel);
+                    periodInfoContainer.appendChild(periodLabel);
+
+                    // Format start_time and end_time to remove seconds
+                    const startTime = groupedResults[result].start_time.slice(0, 5); // Remove seconds
+                    const endTime = groupedResults[result].end_time.slice(0, 5); // Remove seconds
+
+                    // Add start time and end time without parentheses
+                    const periodTime = document.createElement('span');
+                    periodTime.innerText = `${startTime} - ${endTime}`; // No parentheses
+                    periodTime.classList.add('text-sm', 'text-gray-600'); // Optional: Add styling
+                    periodInfoContainer.appendChild(periodTime);
+
+                    // Append the period info container to the label container
+                    periodLabelContainer.appendChild(periodInfoContainer);
 
                     let totalPercentage = 0;
                     let categoryCount = 0;
@@ -152,27 +171,23 @@
 
                     const combinedPercentage = categoryCount > 0 ? Math.floor(totalPercentage / categoryCount) : 0;
 
-                    // Create a container for combined percentage and caret icons
                     const caretContainer = document.createElement('span');
                     caretContainer.classList.add('flex', 'items-center', 'gap-2');
 
-                    // Add combined percentage inside the caretContainer
                     const combinedPercentageSpan = document.createElement('span');
                     combinedPercentageSpan.innerText = `${combinedPercentage} %`;
                     caretContainer.appendChild(combinedPercentageSpan);
 
-                    // Add caret icons to the right of the combined percentage
                     const caretDown = document.createElement('i');
                     caretDown.classList.add('fa-solid', 'fa-caret-down');
-                    caretDown.classList.add('caret-icon'); // Class to toggle between up/down
+                    caretDown.classList.add('caret-icon');
 
                     const caretUp = document.createElement('i');
-                    caretUp.classList.add('fa-solid', 'fa-caret-up', 'hidden'); // Initially hidden
+                    caretUp.classList.add('fa-solid', 'fa-caret-up', 'hidden');
 
                     caretContainer.appendChild(caretDown);
                     caretContainer.appendChild(caretUp);
 
-                    // Append the caretContainer with percentage and caret icons to the label container
                     periodLabelContainer.appendChild(caretContainer);
 
                     const contentContainer = document.createElement('div');
@@ -181,7 +196,6 @@
 
                     periodLabelContainer.addEventListener('click', function() {
                         contentContainer.classList.toggle('hidden');
-                        // Toggle caret icon visibility
                         caretDown.classList.toggle('hidden');
                         caretUp.classList.toggle('hidden');
                     });

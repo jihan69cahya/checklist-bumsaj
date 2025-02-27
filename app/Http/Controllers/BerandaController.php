@@ -21,7 +21,6 @@ class BerandaController extends Controller
             ->where('end_time', '>', now('Asia/Jakarta')->format('H:i:s'))
             ->first();
 
-
         $periods = Period::all();
 
         $itemsCountByCategory = ChecklistCategory::leftJoin('checklist_items', 'checklist_items.checklist_category_id', '=', 'checklist_categories.id')
@@ -40,7 +39,14 @@ class BerandaController extends Controller
             ->groupBy(['checklist_categories.id', 'checklist_categories.name'])
             ->get();
 
-        $allPeriods = Period::select('id', 'label')->get();
+        // Get the current time in 'Asia/Jakarta' timezone
+        $currentTime = now('Asia/Jakarta')->format('H:i:s');
+
+        // Filter periods to include only those that have started or are currently active
+        $allPeriods = Period::where('start_time', '<=', $currentTime)
+            ->select('id', 'label', 'start_time', 'end_time') // Include start_time and end_time
+            ->get();
+
         $allCategories = ChecklistCategory::select('id', 'name')->get();
 
         $entriesCountByCategoryToday = ChecklistCategory::leftJoin('checklist_items', 'checklist_items.checklist_category_id', '=', 'checklist_categories.id')
@@ -55,9 +61,11 @@ class BerandaController extends Controller
                 'checklist_categories.name as category_name',
                 'periods.id as period_id',
                 'periods.label as period_label',
+                'periods.start_time as period_start_time', // Include start_time
+                'periods.end_time as period_end_time', // Include end_time
                 DB::raw('COUNT(checklist_entries.id) as checklist_entries_count')
             ])
-            ->groupBy(['checklist_categories.id', 'checklist_categories.name', 'periods.id', 'periods.label'])
+            ->groupBy(['checklist_categories.id', 'checklist_categories.name', 'periods.id', 'periods.label', 'periods.start_time', 'periods.end_time'])
             ->get();
 
         $groupedResults = [];
@@ -66,6 +74,8 @@ class BerandaController extends Controller
             $periodId = $period->id;
             $groupedResults[$periodId] = [
                 'period_label' => $period->label,
+                'start_time' => $period->start_time, // Add start_time
+                'end_time' => $period->end_time, // Add end_time
                 'categories' => [],
             ];
 
