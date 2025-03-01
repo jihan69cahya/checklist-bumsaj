@@ -5,7 +5,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>@yield('title', 'My Laravel App')</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (app()->environment('production'))
+            <link href="{{ secure_asset('build/assets/app.css') }}" rel="stylesheet">
+            <script src="{{ secure_asset('build/assets/app.js') }}" defer></script>
+        @else
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @endif
+
 
     </head>
 
