@@ -7,9 +7,8 @@
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <title>@yield('title', 'My Laravel App')</title>
         {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
-        <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-        <link href="{{ asset('js/app.js') }}" rel="script">
-
+        <link href="{{ asset('build/assets/app-PMI6RkTz.css') }}" rel="stylesheet">
+        <script src="{{ asset('build/assets/app-D15N6tAg.js') }}"></script>
     </head>
 
     <body class="bg-gray-100">
