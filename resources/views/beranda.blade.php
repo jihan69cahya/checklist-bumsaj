@@ -30,7 +30,7 @@
     </div>
 
     <p class="mb-2 font-bold">Kamis, 13 Februari 2025</p>
-    <p class="hidden text-8xl" id="periodeMessage">Periode Berakhir</p>
+    <p class="hidden text-8xl" id="periodMessage">Periode Berakhir</p>
 
     <div class="flex flex-col w-full gap-4" id="progress-container">
 
@@ -99,6 +99,7 @@
                 dayRecap(itemsCountByCategory, groupedResults)
             } else {
                 document.getElementById('period-desc').innerText = 'Periode Berakhir'
+                document.getElementById('periodMessage').classList.toggle('hidden')
                 dayRecap(itemsCountByCategory, groupedResults)
             }
 
