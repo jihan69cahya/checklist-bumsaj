@@ -6,9 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <title>@yield('title', 'My Laravel App')</title>
-        {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
-        <link href="{{ asset('build/assets/app-PMI6RkTz.css') }}" rel="stylesheet">
-        <script src="{{ asset('build/assets/app-D15N6tAg.js') }}"></script>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
     <body class="bg-gray-100">
