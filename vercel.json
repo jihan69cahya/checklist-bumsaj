@@ -13,7 +13,7 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
-        "APP_URL": "https://your.url.from.vercel.app",
+        "APP_URL": "https://checklist-bumsaj.vercel.app",
         "APP_KEY": "base64:07vxaWKK4TGmThXz7qk9jDho7QbU/vnrEgxtUbXd+9Y=",
 
         "APP_CONFIG_CACHE": "/tmp/config.php",
