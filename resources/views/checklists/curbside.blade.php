@@ -4,7 +4,7 @@
 
 @section('checklist-content')
     <h1 class="mb-2 text-2xl font-bold">Checklist Curbside Area</h1>
-    <p class="font-bold text-gray-700">Kamis, 13 Februari 2025</p>
+    <p class="font-bold text-gray-700" id="current-date"></p>
 
     <div class="fixed z-10 top-0 hidden p-4 px-8 py-4 mt-4 text-center text-black transform -translate-x-1/2 bg-white border-[1px] border-blue-600 rounded-full shadow-md left-1/2"
         id="snackbar">
@@ -80,6 +80,16 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const options = {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            };
+            document.getElementById('current-date').innerText = today.toLocaleDateString('id-ID', options);
+
+
             const snackbar = document.getElementById('snackbar');
             const snackbarButton = document.getElementById('snackbar-button');
 
