@@ -29,8 +29,10 @@
         </div>
     </div>
 
-    <p class="mb-2 font-bold">Kamis, 13 Februari 2025</p>
-    <p class="hidden text-8xl" id="periodMessage">Periode Berakhir</p>
+    <p class="mb-4 font-bold" id="current-date"></p>
+    <div class="items-center justify-center hidden h-64 text-lg bg-gray-200 rounded-md" id="periodMessage">
+        <span>Periode Berakhir</span>
+    </div>
 
     <div class="flex flex-col w-full gap-4" id="progress-container">
 
@@ -47,8 +49,14 @@
             const itemsCountBySubCategory = @json($items_count_by_subcategory);
             const entriesCountBySubCategory = @json($entries_count_by_subcategory);
             const groupedResults = @json($grouped_results);
-            console.log('Grouped results: ', groupedResults);
-            console.log('Items count: ', itemsCountByCategory);
+            const today = new Date();
+            const options = {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            };
+            document.getElementById('current-date').innerText = today.toLocaleDateString('id-ID', options);
 
             function timeToMinutes(time) {
                 const [hours, minutes, seconds] = time.split(':')
@@ -100,6 +108,7 @@
             } else {
                 document.getElementById('period-desc').innerText = 'Periode Berakhir'
                 document.getElementById('periodMessage').classList.toggle('hidden')
+                document.getElementById('periodMessage').classList.toggle('flex')
                 dayRecap(itemsCountByCategory, groupedResults)
             }
 
