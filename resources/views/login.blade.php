@@ -43,11 +43,28 @@
                             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             id="password" name="password" type="password" required>
                     </div>
-                    <button class="w-full py-2 text-white transition bg-blue-600 rounded-md hover:bg-yellow-600"
-                        type="submit">Masuk</button>
+                    <button
+                        class="flex items-center justify-center w-full gap-2 py-2 text-white transition bg-blue-600 rounded-md hover:bg-yellow-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        id="login-btn" type="submit">
+                        <span id="btn-text">Masuk</span>
+                        <span
+                            class="hidden w-5 h-5 border-2 border-white rounded-full border-t-transparent animate-spin"
+                            id="btn-spinner"></span>
+                    </button>
                 </form>
             </div>
         </div>
     </body>
+    <script>
+        document.querySelector("form").addEventListener("submit", function() {
+            const tombol = document.getElementById("login-btn");
+            const teks = document.getElementById("btn-text");
+            const spinner = document.getElementById("btn-spinner");
+
+            tombol.disabled = true;
+            teks.textContent = "Sedang masuk...";
+            spinner.classList.remove("hidden");
+        });
+    </script>
 
 </html>
