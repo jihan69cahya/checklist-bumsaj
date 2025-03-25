@@ -19,7 +19,7 @@ class ChecklistItemSeeder extends Seeder
                 'checklist_subcategory_id' => 1,
                 'name' => 'Trolley',
                 'description' => null,
-                'keterangan' => null
+                'keterangan' => '30 unit'
             ],
             [
                 'checklist_category_id' => 1,
@@ -201,7 +201,7 @@ class ChecklistItemSeeder extends Seeder
                 'checklist_subcategory_id' => 3,
                 'name' => 'Kursi',
                 'description' => null,
-                'keterangan' => null
+                'keterangan' => '327 seat'
             ],
             [
                 'checklist_category_id' => 1,
@@ -369,7 +369,7 @@ class ChecklistItemSeeder extends Seeder
                 'checklist_subcategory_id' => 5,
                 'name' => 'Kursi',
                 'description' => null,
-                'keterangan' => null
+                'keterangan' => '626 seat'
             ],
             [
                 'checklist_category_id' => 1,
@@ -453,7 +453,7 @@ class ChecklistItemSeeder extends Seeder
                 'checklist_subcategory_id' => 6,
                 'name' => 'Trolley',
                 'description' => null,
-                'keterangan' => null
+                'keterangan' => '98 unit'
             ],
             [
                 'checklist_category_id' => 1,
