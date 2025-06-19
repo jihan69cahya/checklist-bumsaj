@@ -16,7 +16,9 @@ class ChecklistEntry extends Model
         'period_id',
         'entry_value_id',
         'entry_date',
-        'entry_time'
+        'entry_time',
+        'photo',
+        'is_validate'
     ];
 
     public function user()

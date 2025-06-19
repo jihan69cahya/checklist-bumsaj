@@ -22,8 +22,7 @@ class ChecklistController extends Controller
             'curbside-area' => ['category_id' => 3, 'view' => 'checklists.curbside']
         ];
 
-        if (!array_key_exists($category_identifier, $categoryMap))
-        {
+        if (!array_key_exists($category_identifier, $categoryMap)) {
             abort(404);
         }
 
@@ -36,11 +35,9 @@ class ChecklistController extends Controller
             ->groupBy('checklist_subcategory_id');
 
         $currentTime = now('Asia/Jakarta')->format('H:i:s');
-        $periods = Period::all()->filter(function ($period) use ($currentTime)
-        {
+        $periods = Period::all()->filter(function ($period) use ($currentTime) {
             return $period->start_time <= $currentTime;
-        })->map(function ($period)
-        {
+        })->map(function ($period) {
             $period->start_time = substr($period->start_time, 0, 5);
             $period->end_time = substr($period->end_time, 0, 5);
             return $period;
@@ -65,8 +62,7 @@ class ChecklistController extends Controller
 
         $entries = ChecklistEntry::where('period_id', $periodId)
             ->where('entry_date', $entryDate)
-            ->whereHas('checklist_item', function ($query) use ($categoryId)
-            {
+            ->whereHas('checklist_item', function ($query) use ($categoryId) {
                 $query->where('checklist_category_id', $categoryId);
             })
             ->with('checklist_item.checklist_subcategory')
@@ -86,17 +82,14 @@ class ChecklistController extends Controller
             ->where('entry_date', $entryDate)
             ->first();
 
-        if ($entry)
-        {
+        if ($entry) {
             $entry->delete();
             return response()->json([
                 'success' => true,
                 'message' => 'Entry deleted successfully.',
                 'data' => $entry
             ]);
-        }
-        else
-        {
+        } else {
             return response()->json([
                 'success' => false,
                 'message' => 'No entry found to delete.',
@@ -122,17 +115,14 @@ class ChecklistController extends Controller
 
         $userId = Auth::id();
 
-        if (!$userId)
-        {
+        if (!$userId) {
             return response()->json(['success' => false, 'error' => 'User not authenticated.'], 401);
         }
 
         DB::beginTransaction();
-        try
-        {
-            foreach ($validatedData['entries'] as $entryData)
-            {
-                ChecklistEntry::updateOrCreate(
+        try {
+            foreach ($validatedData['entries'] as $entryData) {
+                $entry = ChecklistEntry::updateOrCreate(
                     [
                         'checklist_item_id' => $entryData['item_id'],
                         'period_id' => $entryData['period_id'],
@@ -147,13 +137,22 @@ class ChecklistController extends Controller
                         'entry_time' => $entryData['entry_time'],
                     ]
                 );
+
+                // Tangani file upload jika ada
+                $photoKey = 'photo_' . $entryData['item_id'];
+                if ($request->hasFile($photoKey)) {
+                    $file = $request->file($photoKey);
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('uploads/checklist_photos', $filename, 'public');
+                    $entry->photo = $path;
+                    $entry->save();
+                }
             }
+
 
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Entries saved successfully.']);
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error saving entry values:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);

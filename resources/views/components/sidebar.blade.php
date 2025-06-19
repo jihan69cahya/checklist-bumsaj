@@ -3,55 +3,94 @@
         <img class="w-16 h-auto" src="{{ asset('images/logo_kementrian.png') }}" alt="Kementrian Logo">
     </div>
     <ul class="flex flex-col h-full gap-6 p-8 font-medium select-none pe-0 text-md">
-        <a class="flex items-center w-full gap-4" href="{{ route('beranda') }}">
-            <div class="flex items-center justify-center w-6 h-6">
-                <span class="fa-solid fa-home"></span>
-            </div>
-            <div class="w-full">
-                <span>Beranda</span>
-            </div>
-        </a>
-        <li class="flex flex-col gap-4">
-            <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
+        @if (Auth::user()->role == 'USER')
+            <a class="flex items-center w-full gap-4" href="{{ route('beranda') }}">
                 <div class="flex items-center justify-center w-6 h-6">
-                    <span class="fa-regular fa-circle-check"></span>
-                </div>
-                <div class="flex items-center justify-between w-full">
-                    <span>Checklist</span>
-                    <span class="fa-solid fa-caret-down"></span>
-                </div>
-            </div>
-            <ul class="hidden w-full font-light" id="checklist-dropdown">
-                <li>
-                    <a class="block px-4 py-2 text-md"
-                        href="{{ route('checklist.show', ['category_identifier' => 'fasilitas-gedung-terminal']) }}">
-                        Fasilitas Gedung Terminal
-                    </a>
-                </li>
-                <li>
-                    <a class="block px-4 py-2 text-md"
-                        href="{{ route('checklist.show', ['category_identifier' => 'kebersihan-gedung-terminal']) }}">
-                        Kebersihan Gedung Terminal
-                    </a>
-                </li>
-                <li>
-                    <a class="block px-4 py-2 text-md"
-                        href="{{ route('checklist.show', ['category_identifier' => 'curbside-area']) }}">
-                        Kondisi Area Curbside
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li class="flex items-center gap-4 cursor-pointer">
-            <a class="flex items-center w-full gap-4" href="{{ route('rekapitulasi') }}">
-                <div class="flex items-center justify-center w-6 h-6">
-                    <span class="fa-solid fa-clipboard"></span>
+                    <span class="fa-solid fa-home"></span>
                 </div>
                 <div class="w-full">
-                    <span>Rekapitulasi</span>
+                    <span>Beranda</span>
                 </div>
             </a>
-        </li>
+            <li class="flex flex-col gap-4">
+                <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
+                    <div class="flex items-center justify-center w-6 h-6">
+                        <span class="fa-regular fa-circle-check"></span>
+                    </div>
+                    <div class="flex items-center justify-between w-full">
+                        <span>Checklist</span>
+                        <span class="fa-solid fa-caret-down"></span>
+                    </div>
+                </div>
+                <ul class="hidden w-full font-light" id="checklist-dropdown">
+                    <li>
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('checklist.show', ['category_identifier' => 'fasilitas-gedung-terminal']) }}">
+                            Fasilitas Gedung Terminal
+                        </a>
+                    </li>
+                    <li>
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('checklist.show', ['category_identifier' => 'kebersihan-gedung-terminal']) }}">
+                            Kebersihan Gedung Terminal
+                        </a>
+                    </li>
+                    <li>
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('checklist.show', ['category_identifier' => 'curbside-area']) }}">
+                            Kondisi Area Curbside
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="flex items-center gap-4 cursor-pointer">
+                <a class="flex items-center w-full gap-4" href="{{ route('rekapitulasi') }}">
+                    <div class="flex items-center justify-center w-6 h-6">
+                        <span class="fa-solid fa-clipboard"></span>
+                    </div>
+                    <div class="w-full">
+                        <span>Rekapitulasi</span>
+                    </div>
+                </a>
+            </li>
+        @else
+            <a class="flex items-center w-full gap-4" href="{{ route('beranda') }}">
+                <div class="flex items-center justify-center w-6 h-6">
+                    <span class="fa-solid fa-home"></span>
+                </div>
+                <div class="w-full">
+                    <span>Beranda</span>
+                </div>
+            </a>
+            <li class="flex flex-col gap-4">
+                <div class="flex items-center gap-4 cursor-pointer" id="checklist-label">
+                    <div class="flex items-center justify-center w-6 h-6">
+                        <span class="fa-regular fa-circle-check"></span>
+                    </div>
+                    <div class="flex items-center justify-between w-full">
+                        <span>Validasi Checklist</span>
+                        <span class="fa-solid fa-caret-down"></span>
+                    </div>
+                </div>
+                <ul class="hidden w-full font-light" id="checklist-dropdown">
+                    <li>
+                        <a class="block px-4 py-2 text-md" href="">
+                            Fasilitas Gedung Terminal
+                        </a>
+                    </li>
+                    <li>
+                        <a class="block px-4 py-2 text-md" href="">
+                            Kebersihan Gedung Terminal
+                        </a>
+                    </li>
+                    <li>
+                        <a class="block px-4 py-2 text-md" href="">
+                            Kondisi Area Curbside
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
 
         <!-- Logout Form -->
         <li class="flex items-center gap-4 mt-auto mb-8">

@@ -38,6 +38,7 @@
                 <th class="px-4 py-2 border border-gray-300" rowspan="2">Ruangan</th>
                 <th class="px-4 py-2 border border-gray-300" colspan="{{ count($entry_values) }}">Kondisi</th>
                 <th class="px-4 py-2 border border-gray-300" rowspan="2">Keterangan</th>
+                <th class="px-4 py-2 border border-gray-300" rowspan="2">Dokumentasi</th>
             </tr>
             <tr>
                 @foreach ($entry_values as $entry_value)
@@ -52,7 +53,7 @@
                 @endphp
 
                 <tr>
-                    <td class="px-4 py-2 font-semibold bg-gray-200" colspan="{{ 2 + count($entry_values) }}">
+                    <td class="px-4 py-2 font-semibold bg-gray-200" colspan="{{ 3 + count($entry_values) }}">
                         {{ $subcategory_name }}
                     </td>
                 </tr>
@@ -64,12 +65,31 @@
                             <td class="border border-gray-300">
                                 <input class="flex justify-center w-full entry-value-radio"
                                     name="entry_value_{{ $item->id }}" data-item-id="{{ $item->id }}"
-                                    data-entry-value-id="{{ $entry_value->id }}" type="radio"
+                                    data-entry-value-id="{{ $entry_value->id }}"
+                                    data-document="{{ $entry_value->document }}" type="radio"
                                     value="{{ $entry_value->id }}">
                             </td>
                         @endforeach
                         <td class="px-4 py-2 border border-gray-300">
                             {{ $item->keterangan }}
+                        </td>
+                        <td class="px-4 py-2 border border-gray-300 text-center entry-value-photo"
+                            data-doc-cell="{{ $item->id }}">
+                            {{-- Tempat untuk dokumentasi --}}
+                        </td>
+
+                    </tr>
+                    <tr id="upload-form-{{ $item->id }}" class="hidden">
+                        <td colspan="{{ count($entry_values) + 2 }}" class="px-4 py-4 border border-gray-300 bg-blue-50">
+                            <label for="photo_{{ $item->id }}" class="block mb-2 text-sm font-semibold text-blue-700">
+                                Upload Dokumentasi <span class="text-xs text-gray-500">(max: 2MB)</span>
+                            </label>
+                            <div class="flex items-center gap-4">
+                                <input type="file" name="photo_{{ $item->id }}" id="photo_{{ $item->id }}"
+                                    data-label="{{ $item->name }}"
+                                    class="block w-full text-sm text-blue-700 border border-blue-300 rounded-lg cursor-pointer bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    accept="image/*">
+                            </div>
                         </td>
                     </tr>
                 @endforeach
@@ -84,9 +104,18 @@
         <span class="hidden w-5 h-5 border-2 border-white rounded-full border-t-transparent animate-spin"
             id="submit-spinner"></span>
     </button>
+
+    <div id="zoomModal"
+        class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="zoomModalContent" class="relative transform scale-95 transition-all duration-300">
+            <button id="closeModalBtn" class="absolute top-0 right-0 m-2 text-white text-2xl font-bold">&times;</button>
+            <img id="zoomedImage" src="" class="max-h-screen max-w-full rounded-lg shadow-lg" />
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
@@ -98,6 +127,29 @@
             };
             document.getElementById('current-date').innerText = today.toLocaleDateString('id-ID', options);
 
+            const radios = document.querySelectorAll('.entry-value-radio');
+
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const itemId = this.dataset.itemId;
+                    const documentValue = this.dataset.document;
+
+                    const uploadForm = document.querySelector(`#upload-form-${itemId}`);
+                    const photoInput = document.querySelector(`#photo_${itemId}`);
+
+                    if (uploadForm) {
+                        uploadForm.classList.add('hidden');
+                    }
+
+                    if (documentValue === "1") {
+                        uploadForm?.classList.remove('hidden');
+                    } else {
+                        if (photoInput) {
+                            photoInput.value = '';
+                        }
+                    }
+                });
+            });
 
             const snackbar = document.getElementById('snackbar');
             const snackbarButton = document.getElementById('snackbar-button');
@@ -168,9 +220,19 @@
 
                     document.getElementById('period-dropdown-menu').classList.add('hidden');
 
+                    document.querySelectorAll('tr[id^="upload-form-"]').forEach(function(formRow) {
+                        formRow.classList.add('hidden');
+                    });
+
+                    document.querySelectorAll('input[type="file"][id^="photo_"]').forEach(function(
+                        fileInput) {
+                        fileInput.value = '';
+                    });
+
                     fetchTableData(periodId);
                 });
             });
+
 
             document.getElementById('submit-button').addEventListener('click', function() {
                 const button = document.getElementById('submit-button');
@@ -180,11 +242,19 @@
                 button.disabled = true;
                 text.textContent = "Menyimpan...";
                 spinner.classList.remove("hidden");
+
                 const periodId = document.getElementById('period-dropdown-button').getAttribute(
                     'data-period-id');
 
                 if (!periodId) {
-                    console.error('No period selected.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Periode belum dipilih.',
+                        confirmButtonText: 'OK'
+                    });
+                    button.disabled = false;
+                    text.textContent = "Simpan";
+                    spinner.classList.add("hidden");
                     return;
                 }
 
@@ -193,32 +263,108 @@
                 const entryTime = now.toTimeString().split(' ')[0];
 
                 const entries = [];
-                document.querySelectorAll('.entry-value-radio:checked').forEach(radio => {
-                    const itemId = radio.getAttribute('data-item-id');
-                    const entryValueId = radio.getAttribute('data-entry-value-id');
+                const itemIds = new Set();
 
-                    entries.push({
-                        item_id: itemId,
-                        entry_value_id: entryValueId,
-                        period_id: periodId,
-                        entry_date: entryDate,
-                        entry_time: entryTime,
-                    });
+                document.querySelectorAll('.entry-value-radio').forEach(radio => {
+                    itemIds.add(radio.getAttribute('data-item-id'));
                 });
 
-                axios.post('/checklist/save-entry-values', {
-                        entries
+                let allFilled = true;
+                const formData = new FormData();
+
+                let isFileTooLarge = false;
+                let oversizedFiles = [];
+
+                itemIds.forEach(itemId => {
+                    const selected = document.querySelector(
+                        `.entry-value-radio[name="entry_value_${itemId}"]:checked`);
+                    if (!selected) {
+                        allFilled = false;
+                    } else {
+                        entries.push({
+                            item_id: itemId,
+                            entry_value_id: selected.getAttribute('data-entry-value-id'),
+                            period_id: periodId,
+                            entry_date: entryDate,
+                            entry_time: entryTime,
+                        });
+
+                        const fileInput = document.querySelector(`#photo_${itemId}`);
+                        if (fileInput && fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            if (file.size > 2 * 1024 * 1024) {
+                                isFileTooLarge = true;
+                                const label = fileInput.getAttribute('data-label') ||
+                                    `Item ID: ${itemId}`;
+                                oversizedFiles.push(label);
+                            } else {
+                                formData.append(`photo_${itemId}`, file);
+                            }
+                        }
+                    }
+                });
+
+                if (!allFilled) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Semua item harus dichecklist sebelum menyimpan.',
+                        confirmButtonText: 'OK'
+                    });
+                    button.disabled = false;
+                    text.textContent = "Simpan";
+                    spinner.classList.add("hidden");
+                    return;
+                }
+
+                if (isFileTooLarge) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Ukuran file terlalu besar',
+                        html: 'Berikut file yang melebihi 2MB:<br><ul>' +
+                            oversizedFiles.map(label => `<li>- ${label}</li>`).join('') +
+                            '</ul>',
+                        confirmButtonText: 'OK'
+                    });
+                    button.disabled = false;
+                    text.textContent = "Simpan";
+                    spinner.classList.add("hidden");
+                    return;
+                }
+
+                entries.forEach((entry, index) => {
+                    formData.append(`entries[${index}][item_id]`, entry.item_id);
+                    formData.append(`entries[${index}][entry_value_id]`, entry.entry_value_id);
+                    formData.append(`entries[${index}][period_id]`, entry.period_id);
+                    formData.append(`entries[${index}][entry_date]`, entry.entry_date);
+                    formData.append(`entries[${index}][entry_time]`, entry.entry_time);
+                });
+
+                axios.post('/checklist/save-entry-values', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
                     })
                     .then(response => {
-                        snackbar.classList.add('hidden');
-                        snackbar.classList.add('hidden');
+                        hideSnackbar();
                         button.disabled = false;
                         text.textContent = "Simpan";
                         spinner.classList.add("hidden");
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil menyimpan data.',
+                            confirmButtonText: 'OK'
+                        });
+                        location.reload();
                     })
                     .catch(error => {
-                        console.error('Error saving entry values:', error);
-                        alert('Terjadi kesalahan saat menyimpan data.');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Terjadi kesalahan saat menyimpan data.',
+                            confirmButtonText: 'OK'
+                        });
+                        button.disabled = false;
+                        text.textContent = "Simpan";
+                        spinner.classList.add("hidden");
                     });
             });
 
@@ -235,6 +381,10 @@
                     radio.checked = false;
                 });
 
+                document.querySelectorAll('.entry-value-photo').forEach(cell => {
+                    cell.innerHTML = '';
+                });
+
                 axios.get('/checklist/entries-by-period', {
                         params
                     })
@@ -244,19 +394,73 @@
                         entries.forEach(entry => {
                             const itemId = entry.checklist_item_id;
                             const entryValueId = entry.entry_value_id;
+                            const photoPath = entry.photo;
+                            const validate = entry.is_validate;
 
-                            const radioButton = document.querySelector(
-                                `.entry-value-radio[data-item-id="${itemId}"][data-entry-value-id="${entryValueId}"]`
+                            const radioButtons = document.querySelectorAll(
+                                `.entry-value-radio[data-item-id="${itemId}"]`
                             );
-                            if (radioButton) {
-                                radioButton.checked = true;
+
+                            radioButtons.forEach(radio => {
+                                if (parseInt(radio.dataset.entryValueId) === entryValueId) {
+                                    radio.checked = true;
+                                }
+
+                                if (validate == 1) {
+                                    radio.disabled = true;
+                                }
+                            });
+
+                            const docCell = document.querySelector(`td[data-doc-cell="${itemId}"]`);
+
+                            if (docCell) {
+                                docCell.innerHTML = photoPath ?
+                                    `<img src="/storage/${photoPath}" alt="Dokumentasi" class="h-16 mx-auto rounded-md cursor-pointer zoomable" data-src="/storage/${photoPath}">` :
+                                    `<span class="text-gray-400 italic text-sm">No Documentation</span>`;
                             }
+
                         });
+
                     })
                     .catch(error => {
                         console.error('Error fetching entries:', error);
                     });
             }
+
+            const zoomModal = document.getElementById('zoomModal');
+            const zoomedImage = document.getElementById('zoomedImage');
+            const zoomModalContent = document.getElementById('zoomModalContent');
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('zoomable')) {
+                    const src = e.target.getAttribute('data-src');
+                    zoomedImage.src = src;
+
+                    zoomModal.classList.remove('pointer-events-none');
+                    zoomModal.classList.remove('opacity-0');
+                    zoomModalContent.classList.remove('scale-95');
+                    zoomModalContent.classList.add('scale-100');
+                }
+            });
+
+            function closeZoomModal() {
+                zoomModal.classList.add('opacity-0');
+                zoomModalContent.classList.add('scale-95');
+                zoomModalContent.classList.remove('scale-100');
+
+                setTimeout(() => {
+                    zoomModal.classList.add('pointer-events-none');
+                    zoomedImage.src = '';
+                }, 300);
+            }
+
+            document.getElementById('closeModalBtn').addEventListener('click', closeZoomModal);
+
+            zoomModal.addEventListener('click', function(e) {
+                if (e.target === zoomModal) {
+                    closeZoomModal();
+                }
+            });
 
             function getCurrentPeriod() {
                 const now = new Date();
