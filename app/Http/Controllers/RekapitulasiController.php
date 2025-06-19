@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ChecklistCategory;
 use App\Models\ChecklistSubcategory;
 use App\Models\ChecklistEntry;
+use App\Models\ChecklistItem;
 use App\Models\EntryValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,30 +19,42 @@ class RekapitulasiController extends Controller
 {
     public function showRekapitulasi(Request $request)
     {
-        // Get the category ID from the request, default to 1 if not provided
         $categoryId = $request->get('category_id', 1);
         $startDate = $request->get('start_date', today()->format('Y-m-d'));
         $endDate = $request->get('end_date', today()->format('Y-m-d'));
 
-        // Ambil subkategori berdasarkan kategori checklist
         $subcategories = ChecklistSubcategory::where('checklist_category_id', $categoryId)->get();
 
-        // Ambil semua entry_values yang terkait dengan kategori yang dipilih
         $entry_values = EntryValue::where('checklist_category_id', $categoryId)->get();
 
-        // Ambil jumlah entry berdasarkan item_id dan entry_value_id
-        $entries = ChecklistEntry::whereIn('checklist_item_id', $subcategories->pluck('id'))
-            ->whereBetween('entry_date', [$startDate, $endDate])
-            ->select('checklist_item_id', 'entry_value_id', DB::raw('count(*) as total'))
-            ->groupBy('checklist_item_id', 'entry_value_id')
+        $items = ChecklistItem::with('checklist_subcategory')
+            ->whereHas('checklist_subcategory', fn($q) => $q->where('checklist_category_id', $categoryId))
             ->get()
-            ->groupBy('checklist_item_id')
-            ->map(fn($items) => $items->pluck('total', 'entry_value_id')->toArray());
+            ->keyBy('id');
 
-        return view('rekapitulasi', compact('subcategories', 'entries', 'categoryId', 'entry_values'));
+        $rawEntries = ChecklistEntry::whereIn('checklist_item_id', $items->keys())
+            ->whereBetween('entry_date', [$startDate, $endDate])
+            ->get();
+
+        $entries = [];
+
+        foreach ($rawEntries as $entry) {
+            $item = $items[$entry->checklist_item_id];
+            $subcategoryId = $item->checklist_subcategory_id;
+            $entryValueId = $entry->entry_value_id;
+
+            if (!isset($entries[$subcategoryId][$entryValueId])) {
+                $entries[$subcategoryId][$entryValueId] = 0;
+            }
+            $entries[$subcategoryId][$entryValueId]++;
+        }
+        return view('rekapitulasi', [
+            'subcategories' => $subcategories,
+            'entry_values' => $entry_values,
+            'entries' => $entries,
+            'categoryId' => $categoryId,
+        ]);
     }
-
-
 
     public function downloadXls(Request $request)
     {
@@ -53,6 +66,7 @@ class RekapitulasiController extends Controller
         $subcategories = $category->subcategories()->with('items')->get();
         $entries = ChecklistEntry::whereIn('checklist_item_id', $subcategories->pluck('items')->flatten()->pluck('id')->unique())
             ->whereBetween('entry_date', [$startDate, $endDate])
+            ->where('is_validate', 1)
             ->select('checklist_item_id', 'entry_value_id', DB::raw('count(*) as total'))
             ->groupBy('checklist_item_id', 'entry_value_id')
             ->get()
@@ -110,33 +124,26 @@ class RekapitulasiController extends Controller
         // **Mengisi Data Checklist**
         $row = 8;
         $no = 1;
-        foreach ($subcategories as $subcategory)
-        {
+        foreach ($subcategories as $subcategory) {
             $sheet->setCellValue("A$row", join(" ", [$no++, $subcategory->name]));
             $sheet->getStyle("A$row:D$row")->getFont()->setBold(true);
             $sheet->mergeCells("A$row:D$row");
             $sheet->getStyle("A$row:D$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
             $row++;
 
-            foreach ($subcategory->items ?? collect() as $item)
-            {
-                if ($categoryType == 1)
-                {
+            foreach ($subcategory->items ?? collect() as $item) {
+                if ($categoryType == 1) {
                     $baik = $entries[$item->id][1] ?? '0';
                     $rusak = $entries[$item->id][2] ?? '0';
                     $data = [" ", $item->name, $baik, $rusak];
-                }
-                elseif ($categoryType == 2)
-                {
-                    $bersih = $entries[$item->id][1] ?? '0';
-                    $kurangBersih = $entries[$item->id][2] ?? '0';
-                    $kotor = $entries[$item->id][3] ?? '0';
+                } elseif ($categoryType == 2) {
+                    $bersih = $entries[$item->id][3] ?? '0';
+                    $kurangBersih = $entries[$item->id][4] ?? '0';
+                    $kotor = $entries[$item->id][5] ?? '0';
                     $data = [" ", $item->name, $bersih, $kurangBersih, $kotor];
-                }
-                elseif ($categoryType == 3)
-                {
-                    $padat = $entries[$item->id][1] ?? '0';
-                    $lancar = $entries[$item->id][2] ?? '0';
+                } elseif ($categoryType == 3) {
+                    $padat = $entries[$item->id][6] ?? '0';
+                    $lancar = $entries[$item->id][7] ?? '0';
                     $data = [" ", $item->name, $padat, $lancar];
                 }
 
@@ -145,15 +152,11 @@ class RekapitulasiController extends Controller
                 $range2 = "A$row:$lastColumn$row";
                 $sheet->getStyle($range2)
                     ->getFont()->setSize(12)->setName('Times New Roman');
-                foreach (range('A', $lastColumn) as $col)
-                {
-                    if ($col === 'B')
-                    {
+                foreach (range('A', $lastColumn) as $col) {
+                    if ($col === 'B') {
                         // Kolom B (Ruangan) rata kiri
                         $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-                    }
-                    else
-                    {
+                    } else {
                         // Kolom lain rata tengah
                         $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     }
@@ -161,15 +164,11 @@ class RekapitulasiController extends Controller
                 $row++;
             }
 
-            foreach (range('A', $lastColumn) as $col)
-            {
-                if ($col === 'B')
-                {
+            foreach (range('A', $lastColumn) as $col) {
+                if ($col === 'B') {
                     // Kolom B (Ruangan) rata kiri
                     $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                }
-                else
-                {
+                } else {
                     // Kolom lain rata tengah
                     $sheet->getStyle("$col$row")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                 }
@@ -180,8 +179,7 @@ class RekapitulasiController extends Controller
 
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(50);
-        foreach (range('C', $lastColumn) as $col)
-        {
+        foreach (range('C', $lastColumn) as $col) {
             $sheet->getColumnDimension($col)->setWidth(10);
         }
 
@@ -198,8 +196,7 @@ class RekapitulasiController extends Controller
         $sheet->setCellValue("A" . ($signatureRow + 4), "Hygiene & Sanitasi");
         $sheet->setCellValue("A" . ($signatureRow + 8), "Romi Yosep Sigar");
 
-        foreach (["A" . ($signatureRow + 2), "A" . ($signatureRow + 3), "A" . ($signatureRow + 4), "A" . ($signatureRow + 6)] as $boldCell)
-        {
+        foreach (["A" . ($signatureRow + 2), "A" . ($signatureRow + 3), "A" . ($signatureRow + 4), "A" . ($signatureRow + 6)] as $boldCell) {
             $sheet->getStyle($boldCell)->getFont()->setBold(true)->setSize(12)->setName('Times New Roman');
         }
 
@@ -214,8 +211,7 @@ class RekapitulasiController extends Controller
         $filename = "rekapitulasi_" . str_replace(' ', '_', $category->name) . "_{$startDate}_{$endDate}.xls";
         $writer = new Xls($spreadsheet);
 
-        $response = new StreamedResponse(function () use ($writer)
-        {
+        $response = new StreamedResponse(function () use ($writer) {
             $writer->save('php://output');
         });
 

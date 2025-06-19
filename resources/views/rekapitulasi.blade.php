@@ -3,7 +3,13 @@
 @section('title', 'Rekapitulasi')
 
 @section('content')
-    <h1 class="text-2xl font-bold">Rekapitulasi</h1>
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+        <h1 class="text-xl font-semibold text-gray-800">Rekapitulasi</h1>
+        <p class="text-gray-600 text-sm leading-relaxed">
+            Seluruh data checklist ditampilkan, namun dalam laporan rekapitulasi ini hanya disajikan data yang telah
+            divalidasi oleh admin.
+        </p>
+    </div>
 
     <div class="flex gap-4 mt-4">
         <div class="flex items-center gap-2">
@@ -39,20 +45,14 @@
             @foreach ($subcategories as $subcategory)
                 <tr>
                     <td class="px-4 py-2 border">{{ $subcategory->name }}</td>
-
-                    @if ($categoryId == 1)
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][1] ?? 0 }}</td>
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][2] ?? 0 }}</td>
-                    @elseif ($categoryId == 2)
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][3] ?? 0 }}</td>
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][4] ?? 0 }}</td>
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][5] ?? 0 }}</td>
-                    @elseif ($categoryId == 3)
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][6] ?? 0 }}</td>
-                        <td class="px-4 py-2 border">{{ $entries[$subcategory->id][7] ?? 0 }}</td>
-                    @endif
+                    @foreach ($entry_values as $entry_value)
+                        <td class="px-4 py-2 border">
+                            {{ $entries[$subcategory->id][$entry_value->id] ?? 0 }}
+                        </td>
+                    @endforeach
                 </tr>
             @endforeach
+
         </tbody>
     </table>
 
@@ -89,7 +89,7 @@
             document.getElementById("filterBtn").addEventListener("click", updateRekapitulasi);
         });
 
-        document.getElementById("downloadCsvBtn").addEventListener("click", function () {
+        document.getElementById("downloadCsvBtn").addEventListener("click", function() {
             let startDate = document.getElementById("startDate").value;
             let endDate = document.getElementById("endDate").value;
             let selectedCategory = document.getElementById("categorySelect").value;
