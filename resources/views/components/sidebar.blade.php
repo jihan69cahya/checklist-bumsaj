@@ -74,17 +74,20 @@
                 </div>
                 <ul class="hidden w-full font-light" id="checklist-dropdown">
                     <li>
-                        <a class="block px-4 py-2 text-md" href="">
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('validation.show', ['category_identifier' => 'fasilitas-gedung-terminal']) }}">
                             Fasilitas Gedung Terminal
                         </a>
                     </li>
                     <li>
-                        <a class="block px-4 py-2 text-md" href="">
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('validation.show', ['category_identifier' => 'kebersihan-gedung-terminal']) }}">
                             Kebersihan Gedung Terminal
                         </a>
                     </li>
                     <li>
-                        <a class="block px-4 py-2 text-md" href="">
+                        <a class="block px-4 py-2 text-md"
+                            href="{{ route('validation.show', ['category_identifier' => 'curbside-area']) }}">
                             Kondisi Area Curbside
                         </a>
                     </li>

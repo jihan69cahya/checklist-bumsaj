@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-        <title>@yield('title', 'My Laravel App')</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>@yield('title', 'My Laravel App')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-    <body class="bg-gray-100">
-        <div class="flex min-h-screen">
-            <div class="fixed top-0 left-0 h-full">
-                <x-sidebar />
-            </div>
-
-            <div class="w-full ml-64">
-                @include('components.topbar')
-
-                <div class="p-8">
-                    @yield('content')
-                </div>
-            </div>
+<body class="bg-gray-100">
+    <div class="flex min-h-screen">
+        <div class="fixed top-0 left-0 h-full">
+            <x-sidebar />
         </div>
 
-        @yield('scripts')
-    </body>
+        <div class="w-full ml-64">
+            @include('components.topbar')
+
+            <div class="p-8">
+                @yield('content')
+            </div>
+        </div>
+    </div>
+
+    @yield('scripts')
+</body>
 
 </html>
